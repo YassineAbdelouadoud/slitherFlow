@@ -1,5 +1,4 @@
 """The renderer: example maps stay pixel-for-pixel the same, and hand-written specs draw cleanly."""
-from pathlib import Path
 
 import pytest
 import yaml

@@ -1,0 +1,71 @@
+# A made-up workflow that uses the patterns the scanner has to follow.
+configfile: "config.yaml"
+
+include: "rules/common.smk"
+
+USE_DEDUP = config.get("dedup", False)
+if USE_DEDUP:
+    include: "rules/dedup.smk"           # only included when dedup is on
+
+if config["aligner"] == "fast":
+    READS = "trimmed/{sample}.fastq.gz"
+else:
+    READS = f"filtered/{{sample}}.{FILTER_TAG}.fastq.gz"
+
+TARGETS = []
+TARGETS += expand("counts/{sample}.tsv", sample=SAMPLES)
+TARGETS += [rules.report.output.html]
+if USE_DEDUP:
+    TARGETS += expand("dedup/{sample}.bam", sample=SAMPLES)
+
+rule all:
+    input: TARGETS
+
+rule trim:
+    input: lambda wildcards: samples_df.loc[wildcards.sample, "fastq"]
+    output: temp("trimmed/{sample}.fastq.gz")
+    log: "logs/trim/{sample}.log"
+    shell: "cutadapt ..."
+
+rule filter:
+    """
+    Note: a docstring that mentions input: and output: words.
+    """
+    input:
+        reads = "trimmed/{sample}.fastq.gz",
+    output:
+        f"filtered/{{sample}}.{FILTER_TAG}.fastq.gz"
+    shell: "filter ..."
+
+rule align:
+    input:
+        READS,
+        index = "index/genome.idx",
+    output: bam("aligned")
+    shell: "aligner ..."
+
+rule count:
+    input: unpack(count_inputs)
+    output: "counts/{sample}.tsv"
+    shell: "count ..."
+
+rule trim_stats:
+    input: expand("logs/trim/{sample}.log", sample=SAMPLES)
+    output: "qc/trim_stats.txt"
+    shell: "summarise ..."
+
+rule report:
+    input:
+        stats = rules.trim_stats.output,
+        counts = expand("counts/{sample}.tsv", sample=SAMPLES),
+    output: html = "qc/report.html"
+    shell: "report ..."
+
+rule build_index:
+    output: "index/genome.idx"
+    shell: "indexer ..."
+
+rule unused_helper:
+    input: "somewhere/else.txt"
+    output: "scratch/helper.txt"
+    shell: "never asked for"
