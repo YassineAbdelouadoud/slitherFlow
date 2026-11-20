@@ -10,7 +10,7 @@ trunk:                      # steps every sample goes through
   stations:
     - {name: "Trimming", tool: ""}
     - {name: "Alignment", tool: ""}
-    - {name: "Filter alignment", tool: ""}
+    - {name: "Filter alignment", tool: "", feeds: [{line: line1, station: "Calc frip"}]}
   lines: [line4, line1, line3, line2, line5]   # top -> bottom on the trunk
 
 lines:
@@ -50,17 +50,17 @@ lines:
   side6:
     name: "Spikein alignment"
     from: "Trimming"
-    row: -2.6            # negative = above the trunk
+    row: 2.6
     optional: true         # dashed; delete if the step always runs
     to: "terminus"
     stations:
       - {name: "Spikein alignment", tool: ""}
-      - {name: "Calculate scale factors", tool: ""}
+      - {name: "Calculate scale factors", tool: "", feeds: [{line: line5, station: "Generate signal tracks"}]}
       - {name: "Spikein summary", tool: ""}
   side7:
     name: "Count barcodes"
     from: "input"
-    row: 2.6
+    row: 3.1
     optional: true         # dashed; delete if the step always runs
     to: "terminus"
     stations:

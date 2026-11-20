@@ -39,6 +39,7 @@ STYLE = {
 LABEL_OFFSET = 34            # station centre -> station name baseline
 TOOL_OFFSET = 17             # station name -> tool line
 ICON_W, ICON_H = 46, 58
+FEED_LANE = 90               # shortest straight run of a `feeds:` connector between its two bends
 
 
 def text_width(s, size, bold=False):
@@ -74,12 +75,13 @@ class Canvas:
                         f'font-weight="{"700" if bold else "400"}" fill="{fill or self.s["ink"]}" '
                         f'text-anchor="{anchor}">{escape(s)}</text>')
 
-    def polyline(self, pts, color, desc, dashed=False, casing=False, radius=None, casing_skip=0):
+    def polyline(self, pts, color, desc, dashed=False, casing=False, radius=None, casing_skip=0, casing_pts=None):
         r = self.s["corner"] if radius is None else radius
         d = rounded_path(pts, r)
         lw = self.s["line_width"]
-        if casing and len(pts) - casing_skip >= 2:  # white halo so crossings read as a bridge
-            self.out.append(f'<path d="{rounded_path(pts[casing_skip:], r)}" fill="none" stroke="#ffffff" stroke-width="{lw + 8}" '
+        cpts = casing_pts if casing_pts is not None else pts[casing_skip:]
+        if casing and len(cpts) >= 2:  # white halo so crossings read as a bridge
+            self.out.append(f'<path d="{rounded_path(cpts, r)}" fill="none" stroke="#ffffff" stroke-width="{lw + 8}" '
                             f'stroke-linecap="round" stroke-linejoin="round"/>')
         da = f' stroke-dasharray="{self.s["dash"]}"' if dashed else ""
         self.out.append(f'<path d="{d}" fill="none" stroke="{color}" stroke-width="{lw}" '
@@ -135,6 +137,23 @@ def rounded_path(pts, r):
         d += f" L{ax:.1f},{ay:.1f} Q{x1:.1f},{y1:.1f} {bx:.1f},{by:.1f}"
     d += f" L{pts[-1][0]:.1f},{pts[-1][1]:.1f}"
     return d
+
+
+def trim_path(pts, a, b):
+    """pts with length a cut off the start and length b off the end."""
+    def cut(p, d):
+        p = list(p)
+        while len(p) > 1 and d > 0:
+            (x0, y0), (x1, y1) = p[0], p[1]
+            seg = math.hypot(x1 - x0, y1 - y0)
+            if seg <= d:
+                p.pop(0)
+                d -= seg
+            else:
+                p[0] = (x0 + (x1 - x0) * d / seg, y0 + (y1 - y0) * d / seg)
+                d = 0
+        return p
+    return cut(cut(pts, a)[::-1], b)[::-1]
 
 
 def wrap_words(s, max_chars):
@@ -271,6 +290,9 @@ def render(spec):
                     for l in trunk_lines if lines[l]["stations"]]
     branch_start = split_x + widest_bend + trunk.get("branch_gap", max([60] + [h - 20 for h in first_labels]))
     side_lines = [l for l, ln in lines.items() if ln["from"] != "trunk" and not is_branch(ln)] + branch_order
+    # stations whose output also goes to a station on another line: (line id or 'trunk', station)
+    feeders = ([("trunk", st) for st in trunk_stations if st.get("feeds")]
+               + [(lid, st) for lid, ln in lines.items() for st in ln["stations"] if st.get("feeds")])
 
     # Place every line, then push right any automatically placed station that a joining line would otherwise
     # reach from behind, and place again (a push also moves the stations after it and the branches leaving them).
@@ -323,6 +345,16 @@ def render(spec):
             if target["_x"] < need - 0.5:
                 target["_push"] = target.get("_push", 0) + need - target["_x"]
                 pushed = True
+        for src, st in feeders:                             # feeds need room for both 45-degree legs
+            x1, y1 = pos[(src, st["name"])]
+            for ref in st["feeds"]:
+                target = station_of(ref.get("line"), ref.get("station"))
+                if target is None or "x" in target:
+                    continue
+                need = x1 + abs(target["_y"] - y1) + FEED_LANE
+                if target["_x"] < need - 0.5:
+                    target["_push"] = target.get("_push", 0) + need - target["_x"]
+                    pushed = True
         if not pushed:
             break
 
@@ -382,6 +414,40 @@ def render(spec):
         else:
             pts.append((last_x, ry))
 
+    # ---- feeds: leave the station at 45 degrees, run along a lane, drop into the target at 45 degrees ----
+    feeds = []            # (points, colour, dashed, id)
+    touching = {}         # station key -> ids of feeds that start or end there (for the overlap check)
+    feed_ys = {}          # station key -> y the feed heads towards right next to the station (for label sides)
+    for src, st in feeders:
+        x1, y1 = pos[(src, st["name"])]
+        for ref in st["feeds"]:
+            if not isinstance(ref, dict) or station_of(ref.get("line"), ref.get("station")) is None:
+                sys.exit(f"station '{st['name']}': feeds {ref} does not name a station on another line "
+                         f"(use {{line: <id>, station: <name>}})")
+            tkey = (ref["line"], ref["station"])
+            x2, y2 = pos[tkey]
+            if x2 <= x1 + 1:
+                sys.exit(f"station '{st['name']}' feeds '{ref['station']}', which is not to its right; "
+                         f"move one of them (x:)")
+            sgn = 1 if y2 > y1 else -1
+            sy = y1 if src != "trunk" else ((trunk_bot + 13) if y2 > y0 else (trunk_top - 13))
+            dy = abs(y2 - sy)
+            d_in = min(rh / 2, dy / 2)
+            d_out = dy - d_in
+            if d_out + d_in + 2 * s["corner"] > x2 - x1:   # no room for a clean lane (fixed x): go straight
+                pts = [(x1, sy), (x2, y2)]
+            else:
+                pts = [(x1, sy), (x1 + d_out, sy + sgn * d_out), (x2 - d_in, y2 - sgn * d_in), (x2, y2)]
+            if src == "trunk":                       # the trunk has many colours: use the receiving line's
+                color, dashed = lines[ref["line"]]["color"], bool(lines[ref["line"]].get("optional"))
+            else:
+                color, dashed = lines[src]["color"], bool(lines[src].get("optional"))
+            fid = f"feed '{st['name']}' -> '{ref['station']}'"
+            feeds.append((pts, color, dashed, fid))
+            for key, y in (((src, st["name"]), pts[1][1]), (tkey, pts[-2][1])):
+                touching.setdefault(key, []).append(fid)
+                feed_ys.setdefault(key, []).append(y)
+
     # ---- draw: title ----
     if spec.get("title"):
         cv.text(m, 56, spec["title"], 30, True, anchor="start")
@@ -398,6 +464,8 @@ def render(spec):
         # a branch's halo starts after its first bend, so it doesn't cut into the line it leaves
         cv.polyline(geo[lid], ln["color"], lid, dashed=bool(ln.get("optional")),
                     casing=bool(ln.get("_casing")) and ln["from"] != "trunk", casing_skip=1 if is_branch(ln) else 0)
+    for pts, color, dashed, fid in feeds:   # drawn last, bridged over everything they cross
+        cv.polyline(pts, color, fid, dashed=dashed, casing=True, casing_pts=trim_path(pts, 18, 18))
 
     # ---- draw: stations + labels ----
     def label(x, y, st, above):
@@ -421,9 +489,11 @@ def render(spec):
         above = trunk_above
         if "label" in st:
             above = st["label"] == "above"
-        elif any((row_y(lines[l]["row"]) < y0) == above for l in leaving):
+        elif (any((row_y(lines[l]["row"]) < y0) == above for l in leaving)
+              or any((y < y0) == above for y in feed_ys.get(("trunk", st["name"]), []))):
             above = not above
-        cv.pill(x, trunk_top, trunk_bot, trunk_lines + leaving, desc=f"station '{st['name']}'")
+        cv.pill(x, trunk_top, trunk_bot, trunk_lines + leaving + touching.get(("trunk", st["name"]), []),
+                desc=f"station '{st['name']}'")
         label(x, trunk_top if above else trunk_bot, st, above)
 
     for lid, ln in lines.items():
@@ -431,12 +501,13 @@ def render(spec):
             key = (lid, st["name"])
             joiners = [l for l, o in lines.items() if o.get("_joins") == key]
             leavers = [l for l, o in lines.items() if is_branch(o) and (o["from"]["line"], o["from"]["station"]) == key]
-            cv.station(st["_x"], st["_y"], {lid, *joiners, *leavers}, st.get("optional", False),
-                       desc=f"station '{st['name']}'")
+            cv.station(st["_x"], st["_y"], {lid, *joiners, *leavers, *touching.get(key, [])},
+                       st.get("optional", False), desc=f"station '{st['name']}'")
             above = st["_y"] < y0 - 0.5
             if "label" in st:
                 above = st["label"] == "above"
-            elif any((row_y(lines[j]["row"]) < st["_y"]) == above for j in joiners + leavers):
+            elif (any((row_y(lines[j]["row"]) < st["_y"]) == above for j in joiners + leavers)
+                  or any((y < st["_y"]) == above for y in feed_ys.get(key, []))):
                 above = not above
             st["_label_above"] = above
             st["_joined_above"] = any(row_y(lines[j]["row"]) < st["_y"] for j in joiners)
@@ -719,7 +790,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         for i in c:
             assigned[i] = (lid, None)
         lines[lid] = {"name": pretty(rules[c[0]]), "row": row_cycle[len(lines) % len(row_cycle)], "_chain": c,
-                      "_start": depth[hub]}
+                      "_start": depth[hub], "_origin": hub}
     for t in trunk[:-1]:
         for j in S[t]:
             if j in assigned:
@@ -729,7 +800,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
             for i in c:
                 assigned[i] = (lid, None)
             lines[lid] = {"name": pretty(rules[c[0]]), "from": pretty(rules[t]), "optional": True, "_chain": c,
-                          "_start": depth[t]}
+                          "_start": depth[t], "_origin": t}
     for src in sources:
         if src in assigned:
             continue
@@ -737,7 +808,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         lid = f"side{len(lines) + 1}"
         for i in c:
             assigned[i] = (lid, None)
-        lines[lid] = {"name": pretty(rules[c[0]]), "from": "input", "optional": True, "_chain": c, "_start": -1}
+        lines[lid] = {"name": pretty(rules[c[0]]), "from": "input", "optional": True, "_chain": c, "_start": -1, "_origin": None}
     # every rule still unplaced branches off the station of its latest placed input
     for j in order:
         if j in assigned:
@@ -751,7 +822,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
             assigned[i] = (lid, None)
         par = assigned[p][0]
         frm = pretty(rules[p]) if par == "trunk" else {"line": par, "station": pretty(rules[p])}
-        lines[lid] = {"name": pretty(rules[c[0]]), "from": frm, "_chain": c, "_start": depth[p]}
+        lines[lid] = {"name": pretty(rules[c[0]]), "from": frm, "_chain": c, "_start": depth[p], "_origin": p}
     end_depth = max(depth.values(), default=0) + 1
     for lid, ln in lines.items():
         ln["to"] = to = tail_target(ln["_chain"], lid)
@@ -761,7 +832,21 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         elif isinstance(to, dict):
             end = max([end] + [depth[j] for j in S[ln["_chain"][-1]] if assigned[j][0] == to["line"]])
         ln["_end"] = end
-    # side-line rows: just outside the line they join; otherwise outside all main lines (above, then below)
+    # connections the lines already show; every other one (except inputs to the terminus) becomes a `feeds:`
+    drawn = set(zip(trunk, trunk[1:]))
+    for ln in lines.values():
+        c = ln["_chain"]
+        drawn |= set(zip(c, c[1:]))
+        if ln["_origin"] is not None:
+            drawn.add((ln["_origin"], c[0]))
+        to = ln["to"]
+        if isinstance(to, dict):
+            drawn |= {(c[-1], j) for j in S[c[-1]] if assigned.get(j) and assigned[j][0] == to["line"]
+                      and pretty(rules[j]) == to["station"]}
+    feeds = {i: [j for j in S[i] if (i, j) not in drawn and assigned.get(j) and assigned[j][0] != "trunk"]
+             for i in nodes if i in assigned}
+    # side-line rows: just outside the line they join; otherwise outside all main lines on the side of the lines
+    # they feed, or alternating above and below
     main_rows = [ln["row"] for ln in lines.values() if "from" not in ln] or [0]
     used = set(main_rows)
     outside = max(abs(r) for r in main_rows) + 0.6
@@ -775,8 +860,14 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
             direction = 1 if base >= 0 else -1
             row = base + 0.6 * direction
         else:
-            direction = 1 if ln["from"] == "input" else flip
-            flip = -flip
+            fed = [lines[assigned[j][0]]["row"] for i in ln["_chain"] for j in feeds.get(i, [])
+                   if "row" in lines[assigned[j][0]]]
+            if fed:
+                direction = 1 if sum(fed) >= 0 else -1
+            elif ln["from"] == "input":
+                direction = 1
+            else:
+                direction, flip = flip, -flip
             row = outside * direction
         while round(row, 1) in used:
             row += 0.5 * direction
@@ -818,11 +909,19 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
            "",
            "trunk:                      # steps every sample goes through",
            "  stations:"]
-    out += [f"    - {{name: {q(pretty(rules[i]))}, tool: \"\"}}" for i in trunk]
+    ref = lambda v: q(v) if isinstance(v, str) else "{line: " + v["line"] + ", station: " + q(v["station"]) + "}"
+
+    def station(i):
+        extra = ""
+        if feeds.get(i):
+            extra = ", feeds: [" + ", ".join(ref({"line": assigned[j][0], "station": pretty(rules[j])})
+                                             for j in feeds[i]) + "]"
+        return f"{{name: {q(pretty(rules[i]))}, tool: \"\"{extra}}}"
+
+    out += [f"    - {station(i)}" for i in trunk]
     trunk_ids = sorted((l for l, v in lines.items() if "from" not in v), key=lambda l: lines[l]["row"])
     out += ["  lines: [" + ", ".join(trunk_ids) + "]   # top -> bottom on the trunk",
             "", "lines:"]
-    ref = lambda v: q(v) if isinstance(v, str) else "{line: " + v["line"] + ", station: " + q(v["station"]) + "}"
     for lid, ln in lines.items():
         branch = isinstance(ln.get("from"), dict)
         if branch:   # no name: it shares its parent's colour and legend entry
@@ -837,7 +936,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
             out.append("    optional: true         # dashed; delete if the step always runs")
         out.append(f"    to: {ref(ln['to'])}")
         out.append("    stations:")
-        out += [f"      - {{name: {q(pretty(rules[i]))}, tool: \"\"}}" for i in ln["_chain"]]
+        out += [f"      - {station(i)}" for i in ln["_chain"]]
     if term:
         feeding = [ln["row"] for ln in lines.values() if ln["to"] == "terminus" and "from" not in ln]
         trow = min(feeding, key=abs) if feeding else 0
