@@ -57,7 +57,7 @@ slitherflow auto ~/pipelines/my-rnaseq -- --configfile config/test.yaml
 - **Trunk:** follows the longest chain of rules from the main input rule and stops at the first rule that fans out to three or more rules.
 - **Lines:** each branch after that becomes a line, alternating above and below the trunk.
 - **Side lines:** branches that leave the trunk early, or rules that start from the raw input, become dashed side lines placed next to the line they join.
-- **Terminus:** a rule named `multiqc` becomes the end station.
+- **Terminus:** the end station is chosen from the graph shape, not from rule names. It's the rule with nothing downstream (apart from `all`) that collects from the most rules, as long as it collects from at least two. Ties go to the rule with more upstream rules. If no end rule merges branches, the spec has no terminus and each line simply ends.
 
 Rules it can't place are listed in a comment at the end of the spec. Rule names are prettified ("calc_frip" → "Calc frip"), so expect to rename stations and add tools and outputs. [`examples/cutrun/`](examples/cutrun/) shows a starter turned into a finished map: compare `rulegraph.dot` with `cutrun.yaml`.
 

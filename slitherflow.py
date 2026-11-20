@@ -540,6 +540,28 @@ def pretty(rule):
     return " ".join([words[0].capitalize()] + words[1:]) if words else rule
 
 
+def find_terminus(succ, pred):
+    """The rule where the pipeline converges, read from the graph shape alone (rule names are ignored).
+
+    Candidates are sink rules (nothing downstream except `all`) that collect from two or more rules. The one with
+    the most direct inputs wins (the most lines end there); ties go to the one with the most upstream rules, then
+    to the earlier rule in the rule graph. Returns None if no sink merges branches."""
+    def ancestors(i):
+        seen, stack = set(), list(pred[i])
+        while stack:
+            j = stack.pop()
+            if j not in seen:
+                seen.add(j)
+                stack.extend(pred[j])
+        return seen
+
+    sinks = [i for i in succ if not succ[i] and len(pred[i]) >= 2]
+    if not sinks:
+        return None
+    order = {i: k for k, i in enumerate(succ)}
+    return max(sinks, key=lambda i: (len(pred[i]), len(ancestors(i)), -order[i]))
+
+
 def spec_from_rulegraph(dot_text, title="My pipeline"):
     names, edges = {}, []
     for line in dot_text.splitlines():
@@ -559,7 +581,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         if a in rules and b in rules and b not in succ[a]:
             succ[a].append(b)
             pred[b].append(a)
-    term = next((i for i, n in rules.items() if "multiqc" in n.lower()), None)
+    term = find_terminus(succ, pred)
     feeds_term = set(pred[term]) if term else set()
     nodes = [i for i in rules if i != term]
     S = {i: [j for j in succ[i] if j != term] for i in nodes}
@@ -692,7 +714,10 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
     if term:
         feeding = [ln["row"] for ln in lines.values() if ln["to"] == "terminus" and "from" not in ln]
         trow = min(feeding, key=abs) if feeding else 0
-        out += ["", f'terminus: {{name: {q(pretty(rules[term]))}, sublabel: "QC report", row: {trow}, file: "HTML"}}']
+        out += ["", f"# terminus: rule '{rules[term]}', the end rule that collects from the most rules "
+                    f"({len(pred[term])} inputs)",
+                f'terminus: {{name: {q(pretty(rules[term]))}, sublabel: "", row: {trow}}}'
+                '   # add file: "<type>" for an output icon']
     out += ["", 'footnote: ""']
     if unplaced:
         out += ["", "# Rules not placed automatically (add them to a line by hand):"] + [f"#   - {r}" for r in unplaced]
