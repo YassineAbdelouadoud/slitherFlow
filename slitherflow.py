@@ -74,12 +74,12 @@ class Canvas:
                         f'font-weight="{"700" if bold else "400"}" fill="{fill or self.s["ink"]}" '
                         f'text-anchor="{anchor}">{escape(s)}</text>')
 
-    def polyline(self, pts, color, desc, dashed=False, casing=False, radius=None):
+    def polyline(self, pts, color, desc, dashed=False, casing=False, radius=None, casing_skip=0):
         r = self.s["corner"] if radius is None else radius
         d = rounded_path(pts, r)
         lw = self.s["line_width"]
-        if casing:  # white halo so crossings read as a bridge
-            self.out.append(f'<path d="{d}" fill="none" stroke="#ffffff" stroke-width="{lw + 8}" '
+        if casing and len(pts) - casing_skip >= 2:  # white halo so crossings read as a bridge
+            self.out.append(f'<path d="{rounded_path(pts[casing_skip:], r)}" fill="none" stroke="#ffffff" stroke-width="{lw + 8}" '
                             f'stroke-linecap="round" stroke-linejoin="round"/>')
         da = f' stroke-dasharray="{self.s["dash"]}"' if dashed else ""
         self.out.append(f'<path d="{d}" fill="none" stroke="{color}" stroke-width="{lw}" '
@@ -169,10 +169,35 @@ def render(spec):
     m, lw, gap, rh = s["margin"], s["line_width"], s["gap"], s["row_height"]
 
     lines = spec.get("lines") or {}
-    for i, (lid, ln) in enumerate(lines.items()):
-        ln.setdefault("name", lid)
-        ln.setdefault("color", PALETTE[i % len(PALETTE)])
+    is_branch = lambda ln: isinstance(ln.get("from"), dict)   # from: {line: <id>, station: <name>}
+    k = 0
+    for lid, ln in lines.items():
         ln.setdefault("stations", [])
+        if not is_branch(ln):
+            ln.setdefault("name", lid)
+            ln.setdefault("color", PALETTE[k % len(PALETTE)])
+            k += 1
+
+    def parent_of(lid):
+        frm = lines[lid]["from"]
+        if frm.get("line") not in lines or "station" not in frm:
+            sys.exit(f"line '{lid}': from {frm} must be {{line: <id>, station: <name>}} naming another line")
+        return frm["line"]
+
+    # branches inherit their parent line's colour, legend name and dashing, so resolve parents first
+    branch_order, pending = [], [lid for lid, ln in lines.items() if is_branch(ln)]
+    while pending:
+        ready = [lid for lid in pending if parent_of(lid) not in pending]
+        if not ready:
+            sys.exit(f"lines {', '.join(pending)} branch from each other in a loop")
+        for lid in ready:
+            ln, par = lines[lid], lines[parent_of(lid)]
+            ln.setdefault("name", par["name"])
+            ln.setdefault("color", par["color"])
+            if par.get("optional"):
+                ln.setdefault("optional", True)
+            pending.remove(lid)
+        branch_order += ready
     trunk = spec.get("trunk") or {}
     trunk_stations = trunk.get("stations") or []
     trunk_lines = trunk.get("lines") or [lid for lid, ln in lines.items() if ln.get("from", "trunk") == "trunk"]
@@ -203,6 +228,7 @@ def render(spec):
     # ---- trunk stations (x) ----
     inp = spec.get("input")
     x_in = m + 64 if inp else m
+    input_cx = m + 22
     pos = {}  # (line id or 'trunk', station name) -> (x, y)
     x = x_in + 0.8 * s["spacing"]
     for st in trunk_stations:
@@ -219,57 +245,86 @@ def render(spec):
         auto_gap = 30
     split_x = last_trunk_x + trunk.get("split_gap", auto_gap)
 
-    def place(ln, start_x, y):
-        x = start_x
-        for st in ln["stations"]:
-            x = st.get("x", x + st.get("gap", 0))
-            st["_x"], st["_y"] = x, y
-            x += s["branch_spacing"]
+    def half_label(st):
+        tool = st.get("tool", "") or ""
+        if st.get("optional"):
+            tool = f"{tool} · optional" if tool else "optional"
+        return max(text_width(st["name"], 15, True), text_width(tool, 12.5)) / 2
 
-    # ---- main (trunk) lines: geometry ----
-    geo = {}
+    def place(lid, start_x, y, step):
+        x, prev = start_x, None
+        for st in lines[lid]["stations"]:
+            if prev is not None:   # automatic spacing also leaves room for both labels
+                x = max(x, prev["_x"] + half_label(prev) + half_label(st) + 6)
+            x = st.get("x", x + st.get("gap", 0) + st.get("_push", 0))
+            st["_x"], st["_y"] = x, y
+            pos[(lid, st["name"])] = (x, y)
+            x += step
+            prev = st
+
+    def station_of(lid, name):
+        return next((st for st in lines[lid]["stations"] if st["name"] == name), None) if lid in lines else None
+
     widest_bend = max([abs(row_y(lines[l]["row"]) - trunk_y[l]) for l in trunk_lines] + [0])
     first_labels = [max(text_width(lines[l]["stations"][0]["name"], 15, True),
                         text_width(lines[l]["stations"][0].get("tool", "") or "", 12.5)) / 2
                     for l in trunk_lines if lines[l]["stations"]]
     branch_start = split_x + widest_bend + trunk.get("branch_gap", max([60] + [h - 20 for h in first_labels]))
-    for lid in trunk_lines:
-        ln = lines[lid]
-        ty, ry = trunk_y[lid], row_y(ln["row"])
-        pts = [(x_in, ty), (split_x, ty)]
-        if abs(ry - ty) > 0.5:
-            pts.append((split_x + abs(ry - ty), ry))
-        place(ln, branch_start, ry)
-        geo[lid] = pts
+    side_lines = [l for l, ln in lines.items() if ln["from"] != "trunk" and not is_branch(ln)] + branch_order
 
-    # ---- side lines: origin + stations ----
-    input_cx = m + 22
-    for lid, ln in lines.items():
-        if ln["from"] == "trunk":
-            continue
-        ry = row_y(ln["row"])
-        if ln["from"] == "input":
-            ox = input_cx + 16
-            oy = y0 + (ICON_H / 2 + 5) * (1 if ry > y0 else -1)
-        else:
-            key = ("trunk", ln["from"])
-            if key not in pos:
-                sys.exit(f"line '{lid}': from '{ln['from']}' is not 'trunk', 'input' or a trunk station name")
-            ox = pos[key][0]
-            oy = (trunk_bot + 13) if ry > y0 else (trunk_top - 13)
-        geo[lid] = [(ox, oy), (ox, ry)]
-        place(ln, ox + 1.5 * s["spacing"], ry)
-        # default station spacing for side lines is a little wider (they usually span a long stretch)
-        xs = ox + 1.5 * s["spacing"]
-        for st in ln["stations"]:
-            if "x" not in st:
-                st["_x"] = xs + st.get("gap", 0)
-            xs = st["_x"] + 1.1 * s["spacing"]
-
-    for lid, ln in lines.items():
-        for st in ln["stations"]:
-            pos[(lid, st["name"])] = (st["_x"], st["_y"] if "_y" in st else row_y(ln["row"]))
-            st["_y"] = pos[(lid, st["name"])][1]
+    # Place every line, then push right any automatically placed station that a joining line would otherwise
+    # reach from behind, and place again (a push also moves the stations after it and the branches leaving them).
+    for _ in range(100):
+        geo = {}
+        # ---- main (trunk) lines ----
+        for lid in trunk_lines:
+            ty, ry = trunk_y[lid], row_y(lines[lid]["row"])
+            pts = [(x_in, ty), (split_x, ty)]
+            if abs(ry - ty) > 0.5:
+                pts.append((split_x + abs(ry - ty), ry))
+            place(lid, branch_start, ry, s["branch_spacing"])
+            geo[lid] = pts
+        # ---- side lines (from the input or a trunk station), then branches (from a station on another line) ----
+        for lid in side_lines:
+            ln = lines[lid]
+            ry, frm = row_y(ln["row"]), ln["from"]
+            if is_branch(ln):
+                key = (frm["line"], frm["station"])
+                if key not in pos:
+                    sys.exit(f"line '{lid}': from {frm} does not name a station on line '{frm['line']}'")
+                sx, sy = pos[key]
+                d = abs(ry - sy)                      # leave the station at 45 degrees
+                geo[lid] = [(sx, sy)] + ([(sx + d, ry)] if d > 0.5 else [])
+                place(lid, sx + max(d + 60, s["branch_spacing"]), ry, s["branch_spacing"])
+                continue
+            if frm == "input":
+                ox = input_cx + 16
+                oy = y0 + (ICON_H / 2 + 5) * (1 if ry > y0 else -1)
+            else:
+                key = ("trunk", frm)
+                if key not in pos:
+                    sys.exit(f"line '{lid}': from '{frm}' is not 'trunk', 'input', a trunk station name "
+                             f"or {{line: <id>, station: <name>}}")
+                ox = pos[key][0]
+                oy = (trunk_bot + 13) if ry > y0 else (trunk_top - 13)
+            geo[lid] = [(ox, oy), (ox, ry)]
+            # side lines usually span a long stretch, so their stations are spaced a little wider
+            place(lid, ox + 1.5 * s["spacing"], ry, 1.1 * s["spacing"])
+        # ---- joins that arrive from behind: push the target station right ----
+        pushed = False
+        for lid, ln in lines.items():
+            to = ln.get("to")
+            target = station_of(to.get("line"), to.get("station")) if isinstance(to, dict) else None
+            if target is None or "x" in target:
+                continue
+            ry = row_y(ln["row"])
+            behind = max([geo[lid][-1][0]] + [st["_x"] for st in ln["stations"]]) + 30
+            need = behind + abs(target["_y"] - ry) + 8      # room to drop in at 45 degrees
+            if target["_x"] < need - 0.5:
+                target["_push"] = target.get("_push", 0) + need - target["_x"]
+                pushed = True
+        if not pushed:
+            break
 
     # ---- terminus ----
     all_station_x = [p[0] for p in pos.values()]
@@ -340,8 +395,9 @@ def render(spec):
     for lid in order:
         ln = lines[lid]
         # white "bridge" casing only on side lines: on a trunk line it would also eat into its parallel neighbours
+        # a branch's halo starts after its first bend, so it doesn't cut into the line it leaves
         cv.polyline(geo[lid], ln["color"], lid, dashed=bool(ln.get("optional")),
-                    casing=bool(ln.get("_casing")) and ln["from"] != "trunk")
+                    casing=bool(ln.get("_casing")) and ln["from"] != "trunk", casing_skip=1 if is_branch(ln) else 0)
 
     # ---- draw: stations + labels ----
     def label(x, y, st, above):
@@ -372,12 +428,15 @@ def render(spec):
 
     for lid, ln in lines.items():
         for st in ln["stations"]:
-            joiners = [l for l, o in lines.items() if o.get("_joins") == (lid, st["name"])]
-            cv.station(st["_x"], st["_y"], {lid, *joiners}, st.get("optional", False), desc=f"station '{st['name']}'")
+            key = (lid, st["name"])
+            joiners = [l for l, o in lines.items() if o.get("_joins") == key]
+            leavers = [l for l, o in lines.items() if is_branch(o) and (o["from"]["line"], o["from"]["station"]) == key]
+            cv.station(st["_x"], st["_y"], {lid, *joiners, *leavers}, st.get("optional", False),
+                       desc=f"station '{st['name']}'")
             above = st["_y"] < y0 - 0.5
             if "label" in st:
                 above = st["label"] == "above"
-            elif any((row_y(lines[j]["row"]) < st["_y"]) == above for j in joiners):
+            elif any((row_y(lines[j]["row"]) < st["_y"]) == above for j in joiners + leavers):
                 above = not above
             st["_label_above"] = above
             st["_joined_above"] = any(row_y(lines[j]["row"]) < st["_y"] for j in joiners)
@@ -456,7 +515,9 @@ def render(spec):
         name = ln.get("legend", ln["name"])
         if ln.get("optional") and "optional" not in name.lower():
             name += " (optional)"
-        items.append(("line", ln["color"], bool(ln.get("optional")), name))
+        item = ("line", ln["color"], bool(ln.get("optional")), name)
+        if item not in items:      # a branch shares its parent's legend entry
+            items.append(item)
     items.append(("station", None, False, "Step"))
     if any(st.get("optional") for ln in lines.values() for st in ln["stations"]) or any(st.get("optional") for st in trunk_stations):
         items.append(("station", None, True, "Optional step"))
@@ -595,10 +656,26 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
                 descendants(j, seen)
         return seen
 
-    def longest_path(i, memo={}):
+    memo = {}
+
+    def longest_path(i):
         if i not in memo:
             memo[i] = [i] + max((longest_path(j) for j in S[i]), key=len, default=[])
         return memo[i]
+
+    # topological order, and each rule's depth (longest path from a source): a rough stand-in for its x position
+    order, indeg = [], {i: len(P[i]) for i in nodes}
+    ready = [i for i in nodes if not indeg[i]]
+    while ready:
+        i = ready.pop(0)
+        order.append(i)
+        for j in S[i]:
+            indeg[j] -= 1
+            if not indeg[j]:
+                ready.append(j)
+    depth = {}
+    for i in order:
+        depth[i] = max((depth[j] + 1 for j in P[i]), default=0)
 
     sources = [i for i in nodes if not P[i]]
     if not sources:
@@ -614,12 +691,13 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
     assigned = {i: ("trunk", None) for i in trunk}
 
     def chain(start):
+        """Rules for one line: follow the longest path; rules it passes by become branches later."""
         c, i = [], start
         while i is not None and i not in assigned:
             c.append(i)
             assigned[i] = None
             nxt = [j for j in S[i] if j not in assigned]
-            i = nxt[0] if len(S[i]) == 1 and nxt else None
+            i = max(nxt, key=lambda j: len(longest_path(j))) if nxt else None
         return c
 
     def tail_target(c, lid):
@@ -640,7 +718,8 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         lid = f"line{len(lines) + 1}"
         for i in c:
             assigned[i] = (lid, None)
-        lines[lid] = {"name": pretty(rules[c[0]]), "row": row_cycle[len(lines) % len(row_cycle)], "_chain": c}
+        lines[lid] = {"name": pretty(rules[c[0]]), "row": row_cycle[len(lines) % len(row_cycle)], "_chain": c,
+                      "_start": depth[hub]}
     for t in trunk[:-1]:
         for j in S[t]:
             if j in assigned:
@@ -649,7 +728,8 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
             lid = f"side{len(lines) + 1}"
             for i in c:
                 assigned[i] = (lid, None)
-            lines[lid] = {"name": pretty(rules[c[0]]), "from": pretty(rules[t]), "optional": True, "_chain": c}
+            lines[lid] = {"name": pretty(rules[c[0]]), "from": pretty(rules[t]), "optional": True, "_chain": c,
+                          "_start": depth[t]}
     for src in sources:
         if src in assigned:
             continue
@@ -657,16 +737,37 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         lid = f"side{len(lines) + 1}"
         for i in c:
             assigned[i] = (lid, None)
-        lines[lid] = {"name": pretty(rules[c[0]]), "from": "input", "optional": True, "_chain": c}
+        lines[lid] = {"name": pretty(rules[c[0]]), "from": "input", "optional": True, "_chain": c, "_start": -1}
+    # every rule still unplaced branches off the station of its latest placed input
+    for j in order:
+        if j in assigned:
+            continue
+        p = max((p for p in P[j] if assigned.get(p)), key=lambda p: depth[p], default=None)
+        if p is None:
+            continue
+        c = chain(j)
+        lid = f"branch{len(lines) + 1}"
+        for i in c:
+            assigned[i] = (lid, None)
+        par = assigned[p][0]
+        frm = pretty(rules[p]) if par == "trunk" else {"line": par, "station": pretty(rules[p])}
+        lines[lid] = {"name": pretty(rules[c[0]]), "from": frm, "_chain": c, "_start": depth[p]}
+    end_depth = max(depth.values(), default=0) + 1
     for lid, ln in lines.items():
-        ln["to"] = tail_target(ln["_chain"], lid)
+        ln["to"] = to = tail_target(ln["_chain"], lid)
+        end = max(depth[i] for i in ln["_chain"])
+        if to == "terminus":
+            end = end_depth
+        elif isinstance(to, dict):
+            end = max([end] + [depth[j] for j in S[ln["_chain"][-1]] if assigned[j][0] == to["line"]])
+        ln["_end"] = end
     # side-line rows: just outside the line they join; otherwise outside all main lines (above, then below)
     main_rows = [ln["row"] for ln in lines.values() if "from" not in ln] or [0]
     used = set(main_rows)
     outside = max(abs(r) for r in main_rows) + 0.6
     flip = -1
     for lid, ln in lines.items():
-        if "from" not in ln:
+        if "from" not in ln or isinstance(ln["from"], dict):
             continue
         to = ln["to"]
         if isinstance(to, dict) and "row" in lines.get(to["line"], {}):
@@ -681,6 +782,28 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
             row += 0.5 * direction
         ln["row"] = round(row, 1)
         used.add(ln["row"])
+    # branch rows: the nearest row next to the parent line (outwards first) that keeps 0.6 rows clear of every
+    # line covering the same stretch of the pipeline (stretch = rule depth, a stand-in for x)
+    occupied = [(0, -1, depth[hub])] + [(ln["row"], ln["_start"], ln["_end"]) for ln in lines.values() if "row" in ln]
+    flip = 1
+    for lid, ln in lines.items():
+        if not isinstance(ln.get("from"), dict):
+            continue
+        pr, a, b = lines[ln["from"]["line"]]["row"], ln["_start"], ln["_end"]
+        if pr:
+            out_dir = 1 if pr > 0 else -1
+        else:
+            out_dir, flip = flip, -flip
+        def clear(r):
+            for q, a2, b2 in occupied:
+                if a < b2 and a2 < b and abs(r - q) < 0.59:        # share a stretch: keep 0.6 rows apart
+                    return False
+                if a <= b2 and a2 <= b and abs(r - q) < 0.01:      # one ends where the other starts: not end to end
+                    return False
+            return True
+        ln["row"] = next(r for k in range(1, 100) for r in (round(pr + out_dir * 0.6 * k, 1),
+                                                              round(pr - out_dir * 0.6 * k, 1)) if clear(r))
+        occupied.append((ln["row"], a, b))
     unplaced = [rules[i] for i in nodes if i not in assigned]
 
     # ---- write YAML with comments ----
@@ -699,16 +822,20 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
     trunk_ids = sorted((l for l, v in lines.items() if "from" not in v), key=lambda l: lines[l]["row"])
     out += ["  lines: [" + ", ".join(trunk_ids) + "]   # top -> bottom on the trunk",
             "", "lines:"]
+    ref = lambda v: q(v) if isinstance(v, str) else "{line: " + v["line"] + ", station: " + q(v["station"]) + "}"
     for lid, ln in lines.items():
-        out.append(f"  {lid}:")
-        out.append(f"    name: {q(ln['name'])}")
+        branch = isinstance(ln.get("from"), dict)
+        if branch:   # no name: it shares its parent's colour and legend entry
+            out.append(f"  {lid}:                    # branch of {ln['from']['line']} (same colour and legend entry)")
+        else:
+            out.append(f"  {lid}:")
+            out.append(f"    name: {q(ln['name'])}")
         if "from" in ln:
-            out.append(f"    from: {q(ln['from'])}")
+            out.append(f"    from: {ref(ln['from'])}")
         out.append(f"    row: {ln['row']}" + ("            # negative = above the trunk" if ln['row'] < 0 else ""))
         if ln.get("optional"):
             out.append("    optional: true         # dashed; delete if the step always runs")
-        to = ln["to"]
-        out.append(f"    to: {q(to) if isinstance(to, str) else '{line: ' + to['line'] + ', station: ' + q(to['station']) + '}'}")
+        out.append(f"    to: {ref(ln['to'])}")
         out.append("    stations:")
         out += [f"      - {{name: {q(pretty(rules[i]))}, tool: \"\"}}" for i in ln["_chain"]]
     if term:

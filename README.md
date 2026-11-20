@@ -55,11 +55,12 @@ slitherflow auto ~/pipelines/my-rnaseq -- --configfile config/test.yaml
 ## What the starter guesses
 
 - **Trunk:** follows the longest chain of rules from the main input rule and stops at the first rule that fans out to three or more rules.
-- **Lines:** each branch after that becomes a line, alternating above and below the trunk.
+- **Lines:** each branch after that becomes a line, alternating above and below the trunk. Where a line splits, it follows the longest path.
 - **Side lines:** branches that leave the trunk early, or rules that start from the raw input, become dashed side lines placed next to the line they join.
+- **Branches:** every rule a line passed by branches off the station of its latest input, in the parent line's colour. It takes the nearest free row next to its parent, so it stays clear of lines that cover the same part of the pipeline.
 - **Terminus:** the end station is chosen from the graph shape, not from rule names. It's the rule with nothing downstream (apart from `all`) that collects from the most rules, as long as it collects from at least two. Ties go to the rule with more upstream rules. If no end rule merges branches, the spec has no terminus and each line simply ends.
 
-Rules it can't place are listed in a comment at the end of the spec. Rule names are prettified ("calc_frip" → "Calc frip"), so expect to rename stations and add tools and outputs. [`examples/cutrun/`](examples/cutrun/) shows a starter turned into a finished map: compare `rulegraph.dot` with `cutrun.yaml`.
+Rules it can't place (only possible if the rule graph has a cycle) are listed in a comment at the end of the spec. Rule names are prettified ("calc_frip" → "Calc frip"), so expect to rename stations and add tools and outputs. [`examples/cutrun/`](examples/cutrun/) shows a starter turned into a finished map: compare `rulegraph.dot` with `cutrun.yaml`.
 
 ## Overlap check
 
@@ -101,6 +102,10 @@ lines:
     row: -1.6
     to: {line: peaks, station: "Peak filtering"}
     stations: [{name: "Spike-in alignment", tool: "Bowtie2"}]
+  fragments:                   # branch: leaves a station on another line, at 45 degrees
+    from: {line: qc, station: "Fingerprints"}
+    row: 1.6
+    stations: [{name: "Fragment sizes", tool: "deepTools"}]
 
 terminus: {name: "MultiQC", sublabel: "QC report", row: 1, file: "HTML"}
 footnote: "One line of explanation under the legend."
@@ -116,6 +121,10 @@ footnote: "One line of explanation under the legend."
 | `gap` | Extra space before this station, keeping automatic spacing |
 | `label: above` / `below` | Force the label side. By default it goes above for stations above the trunk and below otherwise, and flips when a line leaves or arrives on that side |
 | `outputs` | List of `{file, label, color, dx, dy, label_side}`: a file icon joined to the station by a dotted line. It sits opposite the label (or right of a line's last station), and `dx`/`dy` move it relative to the station |
+
+**Branches:** a line with `from: {line: <id>, station: <name>}` leaves that station. Unless you set them, it takes its parent's `color`, legend `name` and dashing, so it shares the parent's legend entry. Give it its own `name` and `color` to list it separately.
+
+**Automatic spacing:** stations without `x` are spaced so their labels don't touch. A station that another line joins (`to: {line, station}`) is pushed right if the joining line would otherwise reach it from behind. Stations with an explicit `x` are never moved.
 
 **Other keys:**
 - `terminus` also takes `x` and `outputs`.
