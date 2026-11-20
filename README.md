@@ -7,7 +7,6 @@ Draw any Snakemake pipeline as an nf-core-style subway (metro) map:
 
 It works on any project where `snakemake --rulegraph` runs. It reads the rule graph, drafts a YAML spec you can edit, and renders SVG, plus PNG and PDF on request.
 
-![CUT&RUN example](examples/cutrun/cutrun.png)
 
 ## Install
 
@@ -58,6 +57,7 @@ slitherflow auto ~/pipelines/my-rnaseq -- --configfile config/test.yaml
 - **Lines:** each branch after that becomes a line, alternating above and below the trunk. Where a line splits, it follows the longest path.
 - **Side lines:** branches that leave the trunk early, or rules that start from the raw input, become dashed side lines placed next to the line they join.
 - **Branches:** every rule a line passed by branches off the station of its latest input, in the parent line's colour. It takes the nearest free row next to its parent, so it stays clear of lines that cover the same part of the pipeline.
+- **Extra connections:** any rule-graph connection the lines don't already show becomes a `feeds:` connector, for example a BAM from the trunk that a later step also reads. Inputs to the terminus are the exception: drawing every QC log that goes into a report like MultiQC would clutter the map. A side line is placed on the side of the lines it feeds, so its connectors stay short.
 - **Terminus:** the end station is chosen from the graph shape, not from rule names. It's the rule with nothing downstream (apart from `all`) that collects from the most rules, as long as it collects from at least two. Ties go to the rule with more upstream rules. If no end rule merges branches, the spec has no terminus and each line simply ends.
 
 Rules it can't place (only possible if the rule graph has a cycle) are listed in a comment at the end of the spec. Rule names are prettified ("calc_frip" → "Calc frip"), so expect to rename stations and add tools and outputs. The [examples](#examples) show what the starter looks like before and after editing.
@@ -76,13 +76,13 @@ Each example folder includes the pipeline's saved rule graph (`rulegraph.dot`), 
 
 ![CUT&RUN draft](examples/cutrun/cutrun_draft.png)
 
-Every rule is placed, with no edits. The narrow and broad peak-calling lines merge at "Filter peaks". The spike-in and barcode-counting steps become dashed side lines that run to MultiQC, which is the terminus because it collects from the most rules. Compare [`cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml) with the finished [`cutrun.yaml`](examples/cutrun/cutrun.yaml) to see the edits: renamed stations, tools and outputs, lines regrouped by purpose, and `x:` positions.
+Every rule is placed, with no edits. The narrow and broad peak-calling lines merge at "Filter peaks". The spike-in and barcode-counting steps become dashed side lines that run to MultiQC, which is the terminus because it collects from the most rules. Two connections that aren't part of any line are drawn as `feeds:` connectors. "Calculate scale factors" feeds "Generate signal tracks", so the spike-in line runs underneath it. "Filter alignment" feeds "Calc frip" directly, besides feeding it through the peaks. The only connections not drawn are QC inputs to MultiQC. Compare [`cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml) with the finished [`cutrun.yaml`](examples/cutrun/cutrun.yaml) to see the edits: renamed stations, tools and outputs, lines regrouped by purpose, and `x:` positions.
 
 ### miRNA-seq: draft
 
 ![miRNA-seq draft](examples/mirnaseq/mirnaseq_draft.png)
 
-This pipeline splits again after the trunk, so most stats steps are drawn as branches. For example, "Mature mirbase stats" leaves "Mirbase padded aln", and "Mirtop stats" leaves "Mirtop". Each branch is drawn in its parent line's colour. MultiQC runs inside `rule all` here, so it isn't in the rule graph. The terminus is "Alignment metrics counts" instead: it's the only end rule that collects from more than one rule.
+This pipeline splits again after the trunk, so most stats steps are drawn as branches. For example, "Mature mirbase stats" leaves "Mirbase padded aln", and "Mirtop stats" leaves "Mirtop". Each branch is drawn in its parent line's colour. MultiQC runs inside `rule all` here, so it isn't in the rule graph. The terminus is "Alignment metrics counts" instead: it's the only end rule that collects from more than one rule. Every connection is part of a line, so this map needs no `feeds:` connectors.
 
 **To rebuild the drafts:** with `--rulegraph`, the project argument only sets the map title.
 
@@ -153,10 +153,11 @@ footnote: "One line of explanation under the legend."
 | `gap` | Extra space before this station, keeping automatic spacing |
 | `label: above` / `below` | Force the label side. By default it goes above for stations above the trunk and below otherwise, and flips when a line leaves or arrives on that side |
 | `outputs` | List of `{file, label, color, dx, dy, label_side}`: a file icon joined to the station by a dotted line. It sits opposite the label (or right of a line's last station), and `dx`/`dy` move it relative to the station |
+| `feeds` | List of `{line, station}`: this step's output also goes to that station, which must be further right on another line. Drawn as a connector in this line's colour (the receiving line's colour from a trunk station). It leaves at 45°, runs along a lane, drops into the station at 45°, and is bridged where it crosses other lines |
 
 **Branches:** a line with `from: {line: <id>, station: <name>}` leaves that station. Unless you set them, it takes its parent's `color`, legend `name` and dashing, so it shares the parent's legend entry. Give it its own `name` and `color` to list it separately.
 
-**Automatic spacing:** stations without `x` are spaced so their labels don't touch. A station that another line joins (`to: {line, station}`) is pushed right if the joining line would otherwise reach it from behind. Stations with an explicit `x` are never moved.
+**Automatic spacing:** stations without `x` are spaced so their labels don't touch. A station that another line joins (`to: {line, station}`) is pushed right if the joining line would otherwise reach it from behind. The same goes for a station that a `feeds:` connector needs more room to reach. Stations with an explicit `x` are never moved.
 
 **Other keys:**
 - `terminus` also takes `x` and `outputs`.
