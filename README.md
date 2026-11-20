@@ -4,7 +4,7 @@
 
 ![Version 1.0](https://img.shields.io/badge/version-1.0-009E73)
 
-slitherFlow turns a Snakemake pipeline into a subway-map figure, in the style of the nf-core pipeline diagrams. It reads your pipeline's rule graph, writes a first draft of the map as a YAML file, and draws it as an SVG (plus PNG or PDF if you want them). You then edit the YAML until the map tells the story you want.
+slitherFlow turns a Snakemake pipeline into a subway-map figure, in the style of the nf-core pipeline diagrams. It reads your pipeline's rule graph, writes a first draft of the map as a YAML file, and draws it as an SVG (plus PNG or PDF if you want them). You then edit the YAML until the map is to your liking.
 
 ![miRNA-seq pipeline map](examples/mirnaseq/mirnaseq.png)
 
