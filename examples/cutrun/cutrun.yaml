@@ -1,0 +1,79 @@
+# Hand-tuned spec for the GDSC CUT&RUN pipeline (started from `draft`, see rulegraph.dot).
+# Render:  slitherflow render examples/cutrun/cutrun.yaml --png --pdf
+
+title: "GDSC-CUT&RUN pipeline"
+subtitle: "v1.0  ·  Snakemake  ·  Dartmouth Genomic Data Science Core"
+
+input: {label: "Input", sublabel: "Paired-end", file: "FASTQ"}
+
+trunk:                                   # steps every sample goes through
+  stations:
+    - {name: "Trimming", tool: "cutadapt"}
+    - {name: "Alignment", tool: "Bowtie2"}
+    - {name: "Filtering", tool: "samtools"}
+    - name: "Duplicates"
+      tool: "Picard"
+      outputs: [{file: "BAM", label: "Filtered alignments"}]
+  lines: [peaks, signal, qc]             # top -> bottom on the trunk
+
+lines:
+  peaks:
+    name: "Peak calling"
+    color: "#009E73"
+    row: -1                              # one row above the trunk
+    to: terminus
+    stations:
+      - {name: "NFR fragments", tool: "samtools", optional: true, x: 925}
+      - {name: "Peak calling", tool: "MACS3", x: 1150}
+      - name: "Peak filtering"
+        tool: "bedtools"
+        x: 1280
+        outputs: [{file: "BED", label: "Filtered peaks", dy: 56}]
+      - {name: "FRiP", tool: "samtools", x: 1400}
+
+  signal:
+    name: "Signal tracks"
+    color: "#E69F00"
+    row: 0                               # straight on along the trunk
+    stations:
+      - name: "Signal tracks"
+        tool: "deepTools bamCoverage"
+        x: 1180
+        outputs: [{file: "bigWig", label: "Normalized coverage"}]
+
+  qc:
+    name: "Quality control"
+    color: "#CC79A7"
+    row: 1
+    to: terminus
+    stations:
+      - {name: "Fingerprints", tool: "deepTools", x: 990}
+      - {name: "Fragment sizes", tool: "deepTools", x: 1160}
+
+  spike:
+    name: "Spike-in normalization"
+    color: "#D55E00"
+    optional: true
+    from: "Trimming"                     # leaves the Trimming station
+    row: -1.5
+    to: {line: signal, station: "Signal tracks"}
+    stations:
+      - {name: "Spike-in alignment", tool: "Bowtie2"}
+      - {name: "Scale factors", tool: "siConstant / spike-in fragments"}
+
+  dnuc:
+    name: "EpiCypher dNuc counting"
+    color: "#56B4E9"
+    optional: true
+    from: input                          # works on the raw FASTQs
+    row: 2.1
+    to: terminus
+    stations:
+      - {name: "dNuc barcode counts", tool: "EpiCypher kits", x: 690}
+      - {name: "Barcode summary", x: 930}
+
+terminus: {name: "MultiQC", sublabel: "QC report", row: 1, file: "HTML"}
+
+footnote: >-
+  Optional lines and steps are switched on in config.yaml (use_spikeins, use_nfr, kit_type + dnuc_included).
+  Shared steps run on every sample; peaks are called for targets and positive controls with a peak_type.

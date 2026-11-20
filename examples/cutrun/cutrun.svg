@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1650 810" width="1650" height="810">
+<rect width="1650" height="810" fill="#ffffff"/>
+<text x="48.0" y="56.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#1f2328" text-anchor="start">GDSC-CUT&amp;RUN pipeline</text>
+<text x="48.0" y="84.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="400" fill="#59636e" text-anchor="start">v1.0  ·  Snakemake  ·  Dartmouth Genomic Data Science Core</text>
+<path d="M86.0,389.0 L86.0,606.0 Q86.0,628.0 108.0,628.0 L1485.0,628.0 Q1507.0,628.0 1507.0,606.0 L1507.0,512.0" fill="none" stroke="#56B4E9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<path d="M112.0,365.0 L766.0,365.0 Q788.0,365.0 803.6,380.6 L892.4,469.4 Q908.0,485.0 930.0,485.0 L1486.0,485.0" fill="none" stroke="#CC79A7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M112.0,355.0 L766.0,355.0 Q788.0,355.0 810.0,355.0 L1180.0,355.0" fill="none" stroke="#E69F00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M112.0,345.0 L766.0,345.0 Q788.0,345.0 803.6,329.4 L892.4,240.6 Q908.0,225.0 930.0,225.0 L1471.0,225.0 Q1493.0,225.0 1493.0,247.0 L1493.0,458.0" fill="none" stroke="#009E73" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M248.0,332.0 L248.0,182.0 Q248.0,160.0 270.0,160.0 L963.0,160.0 Q985.0,160.0 1000.6,175.6 L1172.0,347.0" fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M248.0,332.0 L248.0,182.0 Q248.0,160.0 270.0,160.0 L963.0,160.0 Q985.0,160.0 1000.6,175.6 L1172.0,347.0" fill="none" stroke="#D55E00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<rect x="235.0" y="332.0" width="26" height="46.0" rx="13.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="248.0" y="401.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Trimming</text>
+<text x="248.0" y="418.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">cutadapt</text>
+<rect x="405.0" y="332.0" width="26" height="46.0" rx="13.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="418.0" y="401.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Alignment</text>
+<text x="418.0" y="418.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Bowtie2</text>
+<rect x="575.0" y="332.0" width="26" height="46.0" rx="13.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="588.0" y="401.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Filtering</text>
+<text x="588.0" y="418.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">samtools</text>
+<rect x="745.0" y="332.0" width="26" height="46.0" rx="13.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="758.0" y="401.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Duplicates</text>
+<text x="758.0" y="418.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Picard</text>
+<circle cx="925.0" cy="225.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2" stroke-dasharray="4 3"/>
+<text x="925.0" y="191.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">NFR fragments</text>
+<text x="925.0" y="208.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">samtools · optional</text>
+<circle cx="1150.0" cy="225.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1150.0" y="191.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Peak calling</text>
+<text x="1150.0" y="208.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">MACS3</text>
+<circle cx="1280.0" cy="225.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1280.0" y="191.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Peak filtering</text>
+<text x="1280.0" y="208.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">bedtools</text>
+<circle cx="1400.0" cy="225.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1400.0" y="191.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">FRiP</text>
+<text x="1400.0" y="208.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">samtools</text>
+<circle cx="1180.0" cy="355.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1180.0" y="391.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Signal tracks</text>
+<text x="1180.0" y="408.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">deepTools bamCoverage</text>
+<circle cx="990.0" cy="485.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="990.0" y="521.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Fingerprints</text>
+<text x="990.0" y="538.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">deepTools</text>
+<circle cx="1160.0" cy="485.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1160.0" y="521.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Fragment sizes</text>
+<text x="1160.0" y="538.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">deepTools</text>
+<circle cx="503.0" cy="160.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="503.0" y="126.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Spike-in alignment</text>
+<text x="503.0" y="143.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Bowtie2</text>
+<circle cx="690.0" cy="160.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="690.0" y="126.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Scale factors</text>
+<text x="690.0" y="143.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">siConstant / spike-in fragments</text>
+<circle cx="690.0" cy="628.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="690.0" y="664.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">dNuc barcode counts</text>
+<text x="690.0" y="681.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">EpiCypher kits</text>
+<circle cx="930.0" cy="628.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="930.0" y="664.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Barcode summary</text>
+<rect x="1482.0" y="453.0" width="36" height="64.0" rx="18.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1531.0" y="481.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2328" text-anchor="start">MultiQC</text>
+<text x="1531.0" y="500.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">QC report</text>
+<path d="M47.0,326.0 H80.0 L93.0,339.0 V384.0 H47.0 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M80.0,326.0 V339.0 H93.0" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="42.0" y="353.0" width="56.0" height="18" rx="3" fill="#57606a"/>
+<text x="70.0" y="367.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">FASTQ</text>
+<text x="70.0" y="297.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Input</text>
+<text x="70.0" y="313.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Paired-end</text>
+<path d="M747.7,335.5 L710.0,300.8" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M660.0,247.0 H693.0 L706.0,260.0 V305.0 H660.0 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M693.0,247.0 V260.0 H706.0" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="655.0" y="274.0" width="56.0" height="18" rx="3" fill="#E69F00"/>
+<text x="683.0" y="288.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">BAM</text>
+<text x="649.0" y="280.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">Filtered</text>
+<text x="649.0" y="296.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">alignments</text>
+<path d="M1280.0,238.0 L1280.0,248.0" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1257.0,252.0 H1290.0 L1303.0,265.0 V310.0 H1257.0 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1290.0,252.0 V265.0 H1303.0" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1252.0" y="279.0" width="56.0" height="18" rx="3" fill="#009E73"/>
+<text x="1280.0" y="293.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">BED</text>
+<text x="1314.0" y="277.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">Filtered</text>
+<text x="1314.0" y="293.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">peaks</text>
+<path d="M1193.0,355.0 L1253.0,355.0" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1257.0,326.0 H1290.0 L1303.0,339.0 V384.0 H1257.0 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1290.0,326.0 V339.0 H1303.0" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1252.0" y="353.0" width="56.0" height="18" rx="3" fill="#E69F00"/>
+<text x="1280.0" y="367.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">bigWig</text>
+<text x="1314.0" y="351.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">Normalized</text>
+<text x="1314.0" y="367.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">coverage</text>
+<path d="M1523.8,512.0 L1547.0,538.4" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1551.0,540.0 H1584.0 L1597.0,553.0 V598.0 H1551.0 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1584.0,540.0 V553.0 H1597.0" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1546.0" y="567.0" width="56.0" height="18" rx="3" fill="#CC79A7"/>
+<text x="1574.0" y="581.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">HTML</text>
+<line x1="48" y1="709.8" x2="1602.0" y2="709.8" stroke="#d0d7de" stroke-width="1.5"/>
+<line x1="48" y1="745.8" x2="94" y2="745.8" stroke="#009E73" stroke-width="7" stroke-linecap="round"/>
+<text x="106.0" y="750.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Peak calling</text>
+<line x1="225.04000000000002" y1="745.8" x2="271.04" y2="745.8" stroke="#E69F00" stroke-width="7" stroke-linecap="round"/>
+<text x="283.0" y="750.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Signal tracks</text>
+<line x1="409.5" y1="745.8" x2="455.5" y2="745.8" stroke="#CC79A7" stroke-width="7" stroke-linecap="round"/>
+<text x="467.5" y="750.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Quality control</text>
+<line x1="608.8" y1="745.8" x2="654.8" y2="745.8" stroke="#D55E00" stroke-width="7" stroke-linecap="round" stroke-dasharray="16 9"/>
+<text x="666.8" y="750.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Spike-in normalization (optional)</text>
+<line x1="941.66" y1="745.8" x2="987.66" y2="745.8" stroke="#56B4E9" stroke-width="7" stroke-linecap="round" stroke-dasharray="16 9"/>
+<text x="999.7" y="750.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">EpiCypher dNuc counting (optional)</text>
+<circle cx="1291.94" cy="745.8" r="9" fill="#ffffff" stroke="#1f2328" stroke-width="3"/>
+<text x="1308.9" y="750.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Step</text>
+<circle cx="1378.6200000000001" cy="745.8" r="9" fill="#ffffff" stroke="#1f2328" stroke-width="3" stroke-dasharray="4 3"/>
+<text x="1395.6" y="750.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Optional step</text>
+<text x="48.0" y="779.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">Optional lines and steps are switched on in config.yaml (use_spikeins, use_nfr, kit_type + dnuc_included). Shared steps run on every sample; peaks are called for targets and positive controls with a peak_type.</text>
+</svg>

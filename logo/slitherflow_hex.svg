@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 600" width="520" height="600">
+<defs><clipPath id="hex"><path d="M260.0,12.0 L509.4,156.0 L509.4,444.0 L260.0,588.0 L10.6,444.0 L10.6,156.0 Z"/></clipPath></defs>
+<path d="M260.0,12.0 L509.4,156.0 L509.4,444.0 L260.0,588.0 L10.6,444.0 L10.6,156.0 Z" fill="#1b2430"/>
+<g clip-path="url(#hex)" stroke="#ffffff" fill="none">
+<line x1="-20" y1="0" x2="-20" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="20" y1="0" x2="20" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="60" y1="0" x2="60" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="100" y1="0" x2="100" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="140" y1="0" x2="140" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="180" y1="0" x2="180" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="220" y1="0" x2="220" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="260" y1="0" x2="260" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="300" y1="0" x2="300" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="340" y1="0" x2="340" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="380" y1="0" x2="380" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="420" y1="0" x2="420" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="460" y1="0" x2="460" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="500" y1="0" x2="500" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="540" y1="0" x2="540" y2="600" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="-20" x2="520" y2="-20" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="20" x2="520" y2="20" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="60" x2="520" y2="60" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="100" x2="520" y2="100" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="140" x2="520" y2="140" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="180" x2="520" y2="180" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="220" x2="520" y2="220" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="260" x2="520" y2="260" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="300" x2="520" y2="300" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="340" x2="520" y2="340" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="380" x2="520" y2="380" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="420" x2="520" y2="420" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="460" x2="520" y2="460" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="500" x2="520" y2="500" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="540" x2="520" y2="540" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="580" x2="520" y2="580" stroke-opacity="0.045" stroke-width="1.2"/>
+<line x1="0" y1="620" x2="520" y2="620" stroke-opacity="0.045" stroke-width="1.2"/>
+<path d="M-10,470 L120,340 L120,60" stroke-opacity="0.07" stroke-width="6" stroke-linejoin="round"/>
+<path d="M430,600 L430,480 L560,350" stroke-opacity="0.07" stroke-width="6" stroke-linejoin="round"/>
+</g>
+<path d="M146.0,378.0 L302.0,378.0 Q346.0,378.0 346.0,334.0 L346.0,330.0 Q346.0,286.0 302.0,286.0 L200.0,286.0 Q128.0,286.0 128.0,214.0 L128.0,210.0 Q128.0,138.0 200.0,138.0 L362.0,138.0" fill="none" stroke="#E69F00" stroke-width="10" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M146.0,392.0 L302.0,392.0 Q360.0,392.0 360.0,334.0 L360.0,330.0 Q360.0,272.0 302.0,272.0 L200.0,272.0 Q142.0,272.0 142.0,214.0 L142.0,210.0 Q142.0,152.0 200.0,152.0 L362.0,152.0" fill="none" stroke="#009E73" stroke-width="10" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M146.0,406.0 L302.0,406.0 Q374.0,406.0 374.0,334.0 L374.0,330.0 Q374.0,258.0 302.0,258.0 L200.0,258.0 Q156.0,258.0 156.0,214.0 L156.0,210.0 Q156.0,166.0 200.0,166.0 L362.0,166.0" fill="none" stroke="#CC79A7" stroke-width="10" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M148,373.0 C116,375.0 84,388 60,378 C82,398 112,411.0 148,411.0 Z" fill="#009E73"/>
+<path d="M422,155 l20,0 l11,-9 M442,155 l11,9" fill="none" stroke="#D55E00" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M356,133.0 C386,116 422,128 426,154 C422,178 386,188 356,171.0 Z" fill="#009E73"/>
+<circle cx="394" cy="143" r="8" fill="#ffffff"/>
+<circle cx="396.5" cy="143" r="4" fill="#1f2328"/>
+<rect x="240.0" y="362.0" width="24" height="60" rx="12" fill="#ffffff" stroke="#1f2328" stroke-width="4"/>
+<rect x="238.0" y="242.0" width="24" height="60" rx="12" fill="#ffffff" stroke="#1f2328" stroke-width="4"/>
+<rect x="238.0" y="122.0" width="24" height="60" rx="12" fill="#ffffff" stroke="#1f2328" stroke-width="4"/>
+<text x="260" y="490" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="50" font-weight="800" text-anchor="middle" letter-spacing="-0.5"><tspan fill="#ffffff">slither</tspan><tspan fill="#009E73">Flow</tspan></text>
+<text x="260" y="514" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" text-anchor="middle" fill="#9aa4b1" letter-spacing="1.2">SNAKEMAKE · SUBWAY MAPS</text>
+<path d="M260.0,12.0 L509.4,156.0 L509.4,444.0 L260.0,588.0 L10.6,444.0 L10.6,156.0 Z" fill="none" stroke="#009E73" stroke-width="14" stroke-linejoin="round"/>
+</svg>

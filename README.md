@@ -1,2 +1,129 @@
-# slitherFlow
-nextflow-style subway diagrams for Snakemake
+# slitherFlow <img src="logo/slitherflow_hex.png" alt="slitherFlow logo" align="right" width="150"/>
+
+Draw any Snakemake pipeline as an nf-core-style subway (metro) map:
+- **Lines:** colour-blind-safe colours, with shared steps as pill stations on a trunk of parallel lines.
+- **Branches:** 45° bends, and dashed lines and stations for optional steps.
+- **Outputs and key:** file icons for outputs, plus a legend and footnote.
+
+It works on any project where `snakemake --rulegraph` runs. It reads the rule graph, drafts a YAML spec you can edit, and renders SVG, plus PNG and PDF on request.
+
+![CUT&RUN example](examples/cutrun/cutrun.png)
+
+## Install
+
+```shell
+pip install .                       # from this folder; gives the `slitherflow` command
+```
+
+Or run the single file directly: `python3 slitherflow.py …`.
+
+**Requirements:**
+- Python ≥ 3.8 with PyYAML.
+- Snakemake on your `PATH`, only for drafting from a project.
+- `rsvg-convert`, only for `--png` / `--pdf` (`brew install librsvg`, or `apt install librsvg2-bin`).
+
+## Quick start
+
+```shell
+# One step: rule graph -> starter spec -> map
+slitherflow auto /path/to/project --png --pdf
+#   writes <project>_subway.yaml (the spec) and <project>_subway.svg/.png/.pdf
+
+# Edit <project>_subway.yaml (rename stations, add tools and outputs, regroup lines, mark optional steps),
+# then re-render. Re-running `auto` keeps your edited spec unless you pass --overwrite-spec.
+slitherflow render <project>_subway.yaml --png --pdf
+```
+
+**Projects that need a config or profile:** anything after `--` goes to Snakemake. The tool runs `snakemake --rulegraph --nolock` inside the project folder, so it doesn't interfere with a run in progress.
+
+```shell
+slitherflow auto ~/pipelines/my-rnaseq -- --configfile config/test.yaml
+```
+
+**Commands:**
+
+| Command | What it does |
+|---|---|
+| `slitherflow auto PROJECT [-o map.svg] [--png] [--pdf] [--strict]` | Draft a spec (if none exists yet) and render it |
+| `slitherflow draft PROJECT [-o spec.yaml]` | Only write the starter spec |
+| `slitherflow render SPEC [-o map.svg] [--png] [--pdf] [--strict]` | Draw a map from a spec |
+
+`auto` and `draft` also take:
+- `--rulegraph FILE.dot`, to use a saved `snakemake --rulegraph` output instead of running Snakemake;
+- `--snakemake PATH`, to pick a specific Snakemake executable.
+
+## What the starter guesses
+
+- **Trunk:** follows the longest chain of rules from the main input rule and stops at the first rule that fans out to three or more rules.
+- **Lines:** each branch after that becomes a line, alternating above and below the trunk.
+- **Side lines:** branches that leave the trunk early, or rules that start from the raw input, become dashed side lines placed next to the line they join.
+- **Terminus:** a rule named `multiqc` becomes the end station.
+
+Rules it can't place are listed in a comment at the end of the spec. Rule names are prettified ("calc_frip" → "Calc frip"), so expect to rename stations and add tools and outputs. [`examples/cutrun/`](examples/cutrun/) shows a starter turned into a finished map: compare `rulegraph.dot` with `cutrun.yaml`.
+
+## Overlap check
+
+Every render checks for overlaps (labels against labels, file icons and lines) and prints any it finds. `--strict` exits with status 1 instead, e.g. for CI. The check estimates text widths, so treat the rendered PNG as the final word.
+
+## Spec format
+
+Everything except `lines` is optional.
+
+```yaml
+title: "My pipeline"
+subtitle: "v1.0  ·  Snakemake"
+input: {label: "Input", sublabel: "Paired-end", file: "FASTQ"}
+
+trunk:                         # steps every sample goes through, drawn as pills across the trunk lines
+  stations:
+    - {name: "Trimming", tool: "cutadapt"}
+    - {name: "Alignment", tool: "Bowtie2", outputs: [{file: "BAM", label: "Aligned reads"}]}
+  lines: [peaks, qc]           # lines that run along the trunk (stacked by row automatically)
+
+lines:
+  peaks:
+    name: "Peak calling"       # legend text
+    color: "#009E73"           # optional; defaults to the Okabe-Ito palette in order
+    row: -1                    # rows from the trunk: negative = above, 0 = straight on, fractions are fine
+    to: terminus               # terminus | none | {line: <id>, station: <name>}
+    stations:
+      - {name: "Peak calling", tool: "MACS3"}
+      - {name: "Peak filtering", tool: "bedtools", outputs: [{file: "BED", label: "Filtered peaks"}]}
+  qc:
+    name: "Quality control"
+    row: 1
+    to: terminus
+    stations: [{name: "Fingerprints", tool: "deepTools"}]
+  spike:
+    name: "Spike-in normalization"
+    optional: true             # dashed line ("(optional)" is added to the legend)
+    from: "Trimming"           # side line: leaves a trunk station, or `input`
+    row: -1.6
+    to: {line: peaks, station: "Peak filtering"}
+    stations: [{name: "Spike-in alignment", tool: "Bowtie2"}]
+
+terminus: {name: "MultiQC", sublabel: "QC report", row: 1, file: "HTML"}
+footnote: "One line of explanation under the legend."
+```
+
+**Per-station options:**
+
+| Key | Meaning |
+|---|---|
+| `name`, `tool` | Station label and the smaller grey line under it |
+| `optional: true` | Dashed station circle; adds "optional" to the tool line |
+| `x` | Absolute x position (the main way to fine-tune a layout) |
+| `gap` | Extra space before this station, keeping automatic spacing |
+| `label: above` / `below` | Force the label side. By default it goes above for stations above the trunk and below otherwise, and flips when a line leaves or arrives on that side |
+| `outputs` | List of `{file, label, color, dx, dy, label_side}`: a file icon joined to the station by a dotted line. It sits opposite the label (or right of a line's last station), and `dx`/`dy` move it relative to the station |
+
+**Other keys:**
+- `terminus` also takes `x` and `outputs`.
+- `trunk` also takes `labels: above`, `split_gap` (space after the last trunk station before branches split) and `branch_gap` (space after the bends before the first branch station).
+- `style` overrides the layout constants: `spacing`, `branch_spacing`, `row_height`, `gap`, `line_width`, `corner`, `dash`, `margin`, `font`.
+
+## Layout tips
+
+- **Side lines:** a line that joins another line's station drops in at 45° if there's room, and otherwise runs along and drops in vertically. Give it a `row` just outside the line it joins. It's drawn with a white casing so its crossings read as bridges.
+- **Crowded branches:** if two branches crowd each other, spread them out with `row`, or space their stations with `x` / `gap`.
+- **Print quality:** the PNG is rendered at 3× for print. The PDF and SVG are vector and keep text editable.
