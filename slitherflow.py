@@ -317,7 +317,18 @@ def render(spec):
                 sx, sy = pos[key]
                 d = abs(ry - sy)                      # leave the station at 45 degrees
                 geo[lid] = [(sx, sy)] + ([(sx + d, ry)] if d > 0.5 else [])
-                place(lid, sx + max(d + 60, s["branch_spacing"]), ry, s["branch_spacing"])
+                start = sx + max(d + 60, s["branch_spacing"])
+                # a sibling branch going further out on the same side runs its diagonal under this branch's
+                # labels (which sit on the side away from the parent): start far enough right to clear it
+                first = ln["stations"][0] if ln["stations"] else None
+                for o in branch_order:
+                    ob = lines[o]
+                    d2 = abs(row_y(ob["row"]) - sy)
+                    if (o != lid and first and (ob["from"]["line"], ob["from"]["station"]) == key
+                            and (row_y(ob["row"]) - sy) * (ry - sy) > 0 and d2 > d):
+                        bottom = LABEL_OFFSET + 2 + (TOOL_OFFSET if first.get("tool") else 0) + 4  # label's far edge
+                        start = max(start, sx + min(d2, d + bottom) + s["line_width"] / 2 + half_label(first) + 16)
+                place(lid, start, ry, s["branch_spacing"])
                 continue
             if frm == "input":
                 ox = input_cx + 16
@@ -504,6 +515,8 @@ def render(spec):
             cv.station(st["_x"], st["_y"], {lid, *joiners, *leavers, *touching.get(key, [])},
                        st.get("optional", False), desc=f"station '{st['name']}'")
             above = st["_y"] < y0 - 0.5
+            if is_branch(ln):                     # a branch's labels go on the side away from its parent line
+                above = ln["row"] < lines[ln["from"]["line"]]["row"]
             if "label" in st:
                 above = st["label"] == "above"
             elif (any((row_y(lines[j]["row"]) < st["_y"]) == above for j in joiners + leavers)
@@ -875,26 +888,41 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         used.add(ln["row"])
     # branch rows: the nearest row next to the parent line (outwards first) that keeps 0.6 rows clear of every
     # line covering the same stretch of the pipeline (stretch = rule depth, a stand-in for x)
-    occupied = [(0, -1, depth[hub])] + [(ln["row"], ln["_start"], ln["_end"]) for ln in lines.values() if "row" in ln]
+    def joins(ln):
+        to = ln.get("to")
+        return (to["line"], to["station"]) if isinstance(to, dict) else None
+    occupied = [(0, -1, depth[hub], None)] + [(ln["row"], ln["_start"], ln["_end"], joins(ln))
+                                              for ln in lines.values() if "row" in ln]
     flip = 1
+    # (line, station) -> side its branches take: the side a line joins it from, else the side its first branch took
+    sides = {}
+    for ln in lines.values():
+        if joins(ln) and "row" in ln and "row" in lines.get(ln["to"]["line"], {}):
+            sides.setdefault(joins(ln), 1 if ln["row"] > lines[ln["to"]["line"]]["row"] else -1)
     for lid, ln in lines.items():
         if not isinstance(ln.get("from"), dict):
             continue
         pr, a, b = lines[ln["from"]["line"]]["row"], ln["_start"], ln["_end"]
-        if pr:
+        src = (ln["from"]["line"], ln["from"]["station"])
+        if src in sides:                      # branches leaving the same station go to the same side, so its
+            out_dir = sides[src]              # label keeps one side free
+        elif pr:
             out_dir = 1 if pr > 0 else -1
         else:
             out_dir, flip = flip, -flip
         def clear(r):
-            for q, a2, b2 in occupied:
+            for q, a2, b2, j in occupied:
                 if a < b2 and a2 < b and abs(r - q) < 0.59:        # share a stretch: keep 0.6 rows apart
                     return False
-                if a <= b2 and a2 <= b and abs(r - q) < 0.01:      # one ends where the other starts: not end to end
-                    return False
+                if a <= b2 and a2 <= b and abs(r - q) < 0.01 and j != src:   # one ends where the other starts
+                    return False                                 # (fine if it joins the station this one leaves)
             return True
-        ln["row"] = next(r for k in range(1, 100) for r in (round(pr + out_dir * 0.6 * k, 1),
-                                                              round(pr - out_dir * 0.6 * k, 1)) if clear(r))
-        occupied.append((ln["row"], a, b))
+        same_side = [round(pr + out_dir * 0.6 * k, 1) for k in range(1, 4)] if src in sides else []
+        ln["row"] = next(r for r in same_side + [r for k in range(1, 100) for r in (round(pr + out_dir * 0.6 * k, 1),
+                                                                                   round(pr - out_dir * 0.6 * k, 1))]
+                         if clear(r))
+        occupied.append((ln["row"], a, b, joins(ln)))
+        sides.setdefault(src, 1 if ln["row"] > pr else -1)
     unplaced = [rules[i] for i in nodes if i not in assigned]
 
     # ---- write YAML with comments ----

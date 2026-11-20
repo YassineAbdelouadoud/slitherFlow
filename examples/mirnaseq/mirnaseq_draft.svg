@@ -41,7 +41,7 @@
 <circle cx="827.9" cy="160.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
 <text x="827.9" y="126.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Genome featureCounts</text>
 <circle cx="878.9" cy="368.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
-<text x="878.9" y="404.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mirtop stats</text>
+<text x="878.9" y="334.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mirtop stats</text>
 <rect x="1280.8" y="284.0" width="36" height="64.0" rx="18.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
 <text x="1329.8" y="312.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2328" text-anchor="start">Alignment metrics counts</text>
 <path d="M47.0,287.0 H80.0 L93.0,300.0 V345.0 H47.0 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>

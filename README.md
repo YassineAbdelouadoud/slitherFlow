@@ -1,124 +1,234 @@
 # slitherFlow <img src="logo/slitherflow_hex.png" alt="slitherFlow logo" align="right" width="150"/>
 
-Draw any Snakemake pipeline as an nf-core-style subway (metro) map:
-- **Lines:** colour-blind-safe colours, with shared steps as pill stations on a trunk of parallel lines.
-- **Branches:** 45° bends, and dashed lines and stations for optional steps.
-- **Outputs and key:** file icons for outputs, plus a legend and footnote.
+slitherFlow turns a Snakemake pipeline into a subway-map figure, in the style of the nf-core pipeline diagrams. It reads your pipeline's rule graph, writes a first draft of the map as a YAML file, and draws it as an SVG (plus PNG or PDF if you want them). You then edit the YAML until the map tells the story you want.
 
-It works on any project where `snakemake --rulegraph` runs. It reads the rule graph, drafts a YAML spec you can edit, and renders SVG, plus PNG and PDF on request.
+![CUT&RUN pipeline map](examples/cutrun/cutrun.png)
 
+*The GDSC CUT&RUN pipeline, drawn with slitherFlow.*
 
-## Install
+## Installation
 
 ```shell
-pip install .                       # from this folder; gives the `slitherflow` command
+git clone https://github.com/mikemartinez99/slitherFlow.git
+cd slitherFlow
+pip install .
 ```
 
-Or run the single file directly: `python3 slitherflow.py …`.
+This installs the `slitherflow` command. If you'd rather not install anything, you can run the script directly with `python3 slitherflow.py` instead. The only Python dependency is PyYAML.
 
-**Requirements:**
-- Python ≥ 3.8 with PyYAML.
-- Snakemake on your `PATH`, only for drafting from a project.
-- `rsvg-convert`, only for `--png` / `--pdf` (`brew install librsvg`, or `apt install librsvg2-bin`).
+You'll also want:
+
+- **Snakemake** on your `PATH`, so slitherFlow can read your pipeline's rule graph. You don't need it if you already have a saved rule graph (see below).
+- **rsvg-convert** for PNG and PDF output. On a Mac, run `brew install librsvg`. On Debian or Ubuntu, run `apt install librsvg2-bin`. SVG output works without it.
 
 ## Quick start
 
-```shell
-# One step: rule graph -> starter spec -> map
-slitherflow auto /path/to/project --png --pdf
-#   writes <project>_subway.yaml (the spec) and <project>_subway.svg/.png/.pdf
-
-# Edit <project>_subway.yaml (rename stations, add tools and outputs, regroup lines, mark optional steps),
-# then re-render. Re-running `auto` keeps your edited spec unless you pass --overwrite-spec.
-slitherflow render <project>_subway.yaml --png --pdf
-```
-
-**Projects that need a config or profile:** anything after `--` goes to Snakemake. The tool runs `snakemake --rulegraph --nolock` inside the project folder, so it doesn't interfere with a run in progress.
+Point slitherFlow at the folder you normally run Snakemake from:
 
 ```shell
-slitherflow auto ~/pipelines/my-rnaseq -- --configfile config/test.yaml
+slitherflow auto /path/to/my-pipeline --png
 ```
 
-**Commands:**
+That writes three files to your current folder:
+
+- `my-pipeline_subway.yaml`: the draft map, which you'll edit
+- `my-pipeline_subway.svg`: the map
+- `my-pipeline_subway.png`: the map as an image
+
+If your pipeline needs a particular config file or profile to build its graph, put Snakemake's arguments after `--`:
+
+```shell
+slitherflow auto /path/to/my-pipeline --png -- --configfile config/test.yaml
+```
+
+### Try it on the bundled example
+
+The repo includes a saved rule graph from the GDSC miRNA-seq pipeline, so you can try slitherFlow without Snakemake or the pipeline itself. From the `slitherFlow` folder:
+
+```shell
+slitherflow auto GDSC-miRNAseq-analysis-pipeline --rulegraph examples/mirnaseq/rulegraph.dot --png
+```
+
+The result looks like this:
+
+![miRNA-seq draft map](examples/mirnaseq/mirnaseq_draft.png)
+
+It's a reasonable start, but names like "Mirbase padded aln" come straight from the rule names, and there are no tools or output files yet. The next section covers how to fix that.
+
+## Customizing your map
+
+To customize the map, edit the YAML file and re-render it:
+
+```shell
+slitherflow render my-pipeline_subway.yaml --png --pdf
+```
+
+Running `auto` again won't overwrite your edits. It only writes a new draft if the YAML file doesn't exist yet, or if you pass `--overwrite-spec`.
+
+The examples below take pieces of the miRNA-seq draft and improve them.
+
+### Rename steps and add tools
+
+Every station has a `name` and a `tool`. The tool is shown in smaller grey text under the name.
+
+```yaml
+  isomirs:
+    name: "Isomir quantification"      # the name shown in the legend
+    row: 1
+    stations:
+      - {name: "Collapse reads", tool: "seqcluster"}
+      - {name: "Hairpin alignment", tool: "Bowtie"}
+      - {name: "Isomir annotation", tool: "miRtop"}
+```
+
+You can rename line IDs too (`line2` → `isomirs`). Just update every place that refers to them.
+
+### Show output files
+
+Add `outputs` to a station to draw a file icon connected to it:
+
+```yaml
+      - name: "Isomir table"
+        tool: "R"
+        outputs: [{file: "TSV", label: "Isomir counts"}]
+```
+
+If an icon lands in an awkward spot, nudge it with `dx` and `dy`.
+
+### Mark optional steps
+
+A station with `optional: true` is drawn with a dashed circle. A line with `optional: true` is drawn dashed, and "(optional)" is added to its legend entry.
+
+```yaml
+      - {name: "PCA", tool: "R", optional: true}
+
+  fastqc_config:
+    name: "FastQC config"
+    optional: true
+    from: input            # starts from the raw input instead of the trunk
+    row: 1.6
+    stations: [{name: "Make config", tool: "Python"}]
+```
+
+### Change colours
+
+Lines use the colour-blind-friendly Okabe-Ito palette by default. Set `color` to override it:
+
+```yaml
+  genome:
+    name: "Alignment"
+    color: "#0072B2"
+```
+
+### Branches
+
+A branch splits off a station partway along another line. It uses its parent line's colour and legend entry, unless you give it its own `name` and `color`.
+
+```yaml
+  mature:
+    from: {line: genome, station: "miRBase alignment"}
+    row: -0.6
+    stations: [{name: "Mature stats", tool: "samtools"}]
+```
+
+### Connect lines together
+
+By default a line just stops at its last station. Use `to` to send it somewhere:
+
+- `to: terminus`: the line runs into the end station.
+- `to: {line: peaks, station: "Peak filtering"}`: the line joins a station on another line.
+
+When a step also feeds into a station on a different line, add `feeds` to that step. This one is from the CUT&RUN draft, where the filtered alignments also go straight into the FRiP calculation:
+
+```yaml
+    - {name: "Filter alignment", tool: "", feeds: [{line: line1, station: "Calc frip"}]}
+```
+
+### The end station
+
+The terminus is the big station at the right edge of the map, usually something like a MultiQC report. Add `file` to give it an output icon:
+
+```yaml
+terminus: {name: "MultiQC", sublabel: "QC report", row: 1, file: "HTML"}
+```
+
+### Fine-tune the layout
+
+slitherFlow spaces stations automatically, but you can take control when you need to:
+
+- `row` moves a whole line up or down. Negative rows are above the trunk, and fractions are fine.
+- `x` pins a station to an exact horizontal position. Stations with an `x` are never moved automatically.
+- `gap` adds extra space before a station, while keeping the automatic spacing.
+- `label: above` or `label: below` forces the side of a station's label.
+
+### Titles, notes and style
+
+```yaml
+title: "GDSC miRNA-seq pipeline"
+subtitle: "v1.0  ·  Snakemake"
+input: {label: "Input", sublabel: "Single-end", file: "FASTQ"}
+footnote: "PCA runs only when there are enough samples."
+
+style: {font: "Helvetica", line_width: 8}
+```
+
+For a complete before-and-after, compare the CUT&RUN draft ([`cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml)) with the finished map at the top of this page ([`cutrun.yaml`](examples/cutrun/cutrun.yaml)).
+
+| Draft, straight from `auto` | After editing |
+|---|---|
+| ![CUT&RUN draft](examples/cutrun/cutrun_draft.png) | ![CUT&RUN finished](examples/cutrun/cutrun.png) |
+
+## How the first draft is built
+
+slitherFlow only looks at the shape of the rule graph. It never guesses from rule names, so it works the same way on any pipeline.
+
+- **Trunk:** the steps every sample goes through, drawn as pill-shaped stations across several lines. It follows the longest chain from the input, and stops where the pipeline splits three or more ways.
+- **Lines:** each branch after the trunk becomes its own line, alternating above and below.
+- **Side lines:** steps that start from the raw input, or leave the trunk early, become dashed side lines.
+- **Branches:** steps that split off partway along a line are drawn as branches. Branches leaving the same station go to the same side, so the station's label stays readable.
+- **Extra connections:** any link in the rule graph that isn't already part of a line is drawn as a `feeds` connector. The exception is inputs to the end station, since drawing every QC file going into MultiQC would clutter the map.
+- **End station:** the final rule that collects from the most other rules. If no final rule merges branches, the map has no end station, and each line just stops.
+
+Rule `all` is always skipped. If your pipeline runs MultiQC inside rule `all` (as the miRNA-seq pipeline does), MultiQC won't be in the rule graph and won't be on the draft map. You can add it back as the terminus yourself.
+
+## Commands
 
 | Command | What it does |
 |---|---|
-| `slitherflow auto PROJECT [-o map.svg] [--png] [--pdf] [--strict]` | Draft a spec (if none exists yet) and render it |
-| `slitherflow draft PROJECT [-o spec.yaml]` | Only write the starter spec |
-| `slitherflow render SPEC [-o map.svg] [--png] [--pdf] [--strict]` | Draw a map from a spec |
+| `slitherflow auto PROJECT [-o map.svg] [--png] [--pdf] [--strict]` | Writes a draft (if there isn't one yet) and renders it |
+| `slitherflow draft PROJECT [-o spec.yaml]` | Only writes the draft |
+| `slitherflow render SPEC [-o map.svg] [--png] [--pdf] [--strict]` | Renders a YAML spec |
 
-`auto` and `draft` also take:
-- `--rulegraph FILE.dot`, to use a saved `snakemake --rulegraph` output instead of running Snakemake;
-- `--snakemake PATH`, to pick a specific Snakemake executable.
+`auto` and `draft` also accept:
 
-## What the starter guesses
+- `--rulegraph FILE.dot` to use a saved `snakemake --rulegraph` output instead of running Snakemake
+- `--snakemake PATH` to use a specific Snakemake executable
 
-- **Trunk:** follows the longest chain of rules from the main input rule and stops at the first rule that fans out to three or more rules.
-- **Lines:** each branch after that becomes a line, alternating above and below the trunk. Where a line splits, it follows the longest path.
-- **Side lines:** branches that leave the trunk early, or rules that start from the raw input, become dashed side lines placed next to the line they join.
-- **Branches:** every rule a line passed by branches off the station of its latest input, in the parent line's colour. It takes the nearest free row next to its parent, so it stays clear of lines that cover the same part of the pipeline.
-- **Extra connections:** any rule-graph connection the lines don't already show becomes a `feeds:` connector, for example a BAM from the trunk that a later step also reads. Inputs to the terminus are the exception: drawing every QC log that goes into a report like MultiQC would clutter the map. A side line is placed on the side of the lines it feeds, so its connectors stay short.
-- **Terminus:** the end station is chosen from the graph shape, not from rule names. It's the rule with nothing downstream (apart from `all`) that collects from the most rules, as long as it collects from at least two. Ties go to the rule with more upstream rules. If no end rule merges branches, the spec has no terminus and each line simply ends.
+slitherFlow runs `snakemake --rulegraph --nolock`, so it's safe to use while the pipeline is running.
 
-Rules it can't place (only possible if the rule graph has a cycle) are listed in a comment at the end of the spec. Rule names are prettified ("calc_frip" → "Calc frip"), so expect to rename stations and add tools and outputs. The [examples](#examples) show what the starter looks like before and after editing.
+Every render checks for overlapping labels, icons and lines, and prints anything it finds. With `--strict`, it exits with an error instead, which is useful in CI. The check estimates text widths, so always look at the final image too.
 
-## Examples
+## Spec reference
 
-Each example folder includes the pipeline's saved rule graph (`rulegraph.dot`), so you can rebuild the maps without Snakemake or the pipeline itself.
-
-| Example | Spec | What it shows |
-|---|---|---|
-| CUT&RUN, finished | [`cutrun/cutrun.yaml`](examples/cutrun/cutrun.yaml) | The map at the top of this page: the draft below, after editing |
-| CUT&RUN, draft | [`cutrun/cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml) | The starter spec exactly as `draft` writes it |
-| miRNA-seq, draft | [`mirnaseq/mirnaseq_draft.yaml`](examples/mirnaseq/mirnaseq_draft.yaml) | Branches leaving stations partway along a line, and a terminus that isn't MultiQC |
-
-### CUT&RUN: draft
-
-![CUT&RUN draft](examples/cutrun/cutrun_draft.png)
-
-Every rule is placed, with no edits. The narrow and broad peak-calling lines merge at "Filter peaks". The spike-in and barcode-counting steps become dashed side lines that run to MultiQC, which is the terminus because it collects from the most rules. Two connections that aren't part of any line are drawn as `feeds:` connectors. "Calculate scale factors" feeds "Generate signal tracks", so the spike-in line runs underneath it. "Filter alignment" feeds "Calc frip" directly, besides feeding it through the peaks. The only connections not drawn are QC inputs to MultiQC. Compare [`cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml) with the finished [`cutrun.yaml`](examples/cutrun/cutrun.yaml) to see the edits: renamed stations, tools and outputs, lines regrouped by purpose, and `x:` positions.
-
-### miRNA-seq: draft
-
-![miRNA-seq draft](examples/mirnaseq/mirnaseq_draft.png)
-
-This pipeline splits again after the trunk, so most stats steps are drawn as branches. For example, "Mature mirbase stats" leaves "Mirbase padded aln", and "Mirtop stats" leaves "Mirtop". Each branch is drawn in its parent line's colour. MultiQC runs inside `rule all` here, so it isn't in the rule graph. The terminus is "Alignment metrics counts" instead: it's the only end rule that collects from more than one rule. Every connection is part of a line, so this map needs no `feeds:` connectors.
-
-**To rebuild the drafts:** with `--rulegraph`, the project argument only sets the map title.
-
-```shell
-slitherflow draft GDSC-CUT-RUN-pipeline --rulegraph examples/cutrun/rulegraph.dot -o examples/cutrun/cutrun_draft.yaml
-slitherflow render examples/cutrun/cutrun_draft.yaml --png --pdf
-
-slitherflow draft GDSC-miRNAseq-analysis-pipeline --rulegraph examples/mirnaseq/rulegraph.dot -o examples/mirnaseq/mirnaseq_draft.yaml
-slitherflow render examples/mirnaseq/mirnaseq_draft.yaml --png --pdf
-```
-
-## Overlap check
-
-Every render checks for overlaps (labels against labels, file icons and lines) and prints any it finds. `--strict` exits with status 1 instead, e.g. for CI. The check estimates text widths, so treat the rendered PNG as the final word.
-
-## Spec format
-
-Everything except `lines` is optional.
+Here's a small spec that uses most of the options. Everything except `lines` is optional.
 
 ```yaml
 title: "My pipeline"
 subtitle: "v1.0  ·  Snakemake"
 input: {label: "Input", sublabel: "Paired-end", file: "FASTQ"}
 
-trunk:                         # steps every sample goes through, drawn as pills across the trunk lines
+trunk:
   stations:
     - {name: "Trimming", tool: "cutadapt"}
     - {name: "Alignment", tool: "Bowtie2", outputs: [{file: "BAM", label: "Aligned reads"}]}
-  lines: [peaks, qc]           # lines that run along the trunk (stacked by row automatically)
+  lines: [peaks, qc]           # lines that run along the trunk, top to bottom
 
 lines:
   peaks:
-    name: "Peak calling"       # legend text
-    color: "#009E73"           # optional; defaults to the Okabe-Ito palette in order
-    row: -1                    # rows from the trunk: negative = above, 0 = straight on, fractions are fine
-    to: terminus               # terminus | none | {line: <id>, station: <name>}
+    name: "Peak calling"
+    color: "#009E73"
+    row: -1
+    to: terminus
     stations:
       - {name: "Peak calling", tool: "MACS3"}
       - {name: "Peak filtering", tool: "bedtools", outputs: [{file: "BED", label: "Filtered peaks"}]}
@@ -129,13 +239,13 @@ lines:
     stations: [{name: "Fingerprints", tool: "deepTools"}]
   spike:
     name: "Spike-in normalization"
-    optional: true             # dashed line ("(optional)" is added to the legend)
-    from: "Trimming"           # side line: leaves a trunk station, or `input`
+    optional: true
+    from: "Trimming"           # leaves a trunk station (or use `input`)
     row: -1.6
     to: {line: peaks, station: "Peak filtering"}
     stations: [{name: "Spike-in alignment", tool: "Bowtie2"}]
-  fragments:                   # branch: leaves a station on another line, at 45 degrees
-    from: {line: qc, station: "Fingerprints"}
+  fragments:
+    from: {line: qc, station: "Fingerprints"}   # a branch
     row: 1.6
     stations: [{name: "Fragment sizes", tool: "deepTools"}]
 
@@ -143,29 +253,52 @@ terminus: {name: "MultiQC", sublabel: "QC report", row: 1, file: "HTML"}
 footnote: "One line of explanation under the legend."
 ```
 
-**Per-station options:**
+**Station options**
 
 | Key | Meaning |
 |---|---|
-| `name`, `tool` | Station label and the smaller grey line under it |
-| `optional: true` | Dashed station circle; adds "optional" to the tool line |
-| `x` | Absolute x position (the main way to fine-tune a layout) |
-| `gap` | Extra space before this station, keeping automatic spacing |
-| `label: above` / `below` | Force the label side. By default it goes above for stations above the trunk and below otherwise, and flips when a line leaves or arrives on that side |
-| `outputs` | List of `{file, label, color, dx, dy, label_side}`: a file icon joined to the station by a dotted line. It sits opposite the label (or right of a line's last station), and `dx`/`dy` move it relative to the station |
-| `feeds` | List of `{line, station}`: this step's output also goes to that station, which must be further right on another line. Drawn as a connector in this line's colour (the receiving line's colour from a trunk station). It leaves at 45°, runs along a lane, drops into the station at 45°, and is bridged where it crosses other lines |
+| `name`, `tool` | The label, and the smaller grey text under it |
+| `optional: true` | Dashed station circle, with "optional" added to the tool text |
+| `x` | Exact horizontal position |
+| `gap` | Extra space before this station |
+| `label: above` / `below` | Which side the label goes on. By default it goes away from the trunk (or, on a branch, away from its parent line), and moves to the other side if a line is in the way |
+| `outputs` | File icons: a list of `{file, label, color, dx, dy, label_side}` |
+| `feeds` | A list of `{line, station}` that this step also feeds into. The target has to be further right, on a different line |
 
-**Branches:** a line with `from: {line: <id>, station: <name>}` leaves that station. Unless you set them, it takes its parent's `color`, legend `name` and dashing, so it shares the parent's legend entry. Give it its own `name` and `color` to list it separately.
+**Other options**
 
-**Automatic spacing:** stations without `x` are spaced so their labels don't touch. A station that another line joins (`to: {line, station}`) is pushed right if the joining line would otherwise reach it from behind. The same goes for a station that a `feeds:` connector needs more room to reach. Stations with an explicit `x` are never moved.
+- `terminus` also accepts `x` and `outputs`.
+- `trunk` also accepts `labels: above`, `split_gap` (space before the lines split apart) and `branch_gap` (space before the first station after the split).
+- `style` can override `spacing`, `branch_spacing`, `row_height`, `gap`, `line_width`, `corner`, `dash`, `margin` and `font`.
 
-**Other keys:**
-- `terminus` also takes `x` and `outputs`.
-- `trunk` also takes `labels: above`, `split_gap` (space after the last trunk station before branches split) and `branch_gap` (space after the bends before the first branch station).
-- `style` overrides the layout constants: `spacing`, `branch_spacing`, `row_height`, `gap`, `line_width`, `corner`, `dash`, `margin`, `font`.
+A few layout tips:
 
-## Layout tips
+- A line that joins another line comes in at 45° if there's room. Give it a `row` just outside the line it joins. Where lines cross, the joining line gets a white outline so the crossing reads like a bridge.
+- If branches crowd each other, spread them out with `row`, or space out their stations with `x` or `gap`.
+- PNGs are rendered at 3× resolution, so they're good enough for print. The SVG and PDF are vector files, and the text in them stays editable.
 
-- **Side lines:** a line that joins another line's station drops in at 45° if there's room, and otherwise runs along and drops in vertically. Give it a `row` just outside the line it joins. It's drawn with a white casing so its crossings read as bridges.
-- **Crowded branches:** if two branches crowd each other, spread them out with `row`, or space their stations with `x` / `gap`.
-- **Print quality:** the PNG is rendered at 3× for print. The PDF and SVG are vector and keep text editable.
+## Examples
+
+Each example folder includes the pipeline's saved rule graph, so you can rebuild any of these maps without Snakemake.
+
+| Example | Spec | Notes |
+|---|---|---|
+| CUT&RUN, finished | [`cutrun/cutrun.yaml`](examples/cutrun/cutrun.yaml) | The map at the top of this page |
+| CUT&RUN, draft | [`cutrun/cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml) | Exactly what `draft` writes. Includes two `feeds` connectors |
+| miRNA-seq, draft | [`mirnaseq/mirnaseq_draft.yaml`](examples/mirnaseq/mirnaseq_draft.yaml) | Lots of branches, and an end station that isn't MultiQC |
+
+To rebuild the drafts:
+
+```shell
+slitherflow draft GDSC-CUT-RUN-pipeline --rulegraph examples/cutrun/rulegraph.dot -o examples/cutrun/cutrun_draft.yaml
+slitherflow render examples/cutrun/cutrun_draft.yaml --png --pdf
+
+slitherflow draft GDSC-miRNAseq-analysis-pipeline --rulegraph examples/mirnaseq/rulegraph.dot -o examples/mirnaseq/mirnaseq_draft.yaml
+slitherflow render examples/mirnaseq/mirnaseq_draft.yaml --png --pdf
+```
+
+When you use `--rulegraph`, the project name is only used for the map's title.
+
+## A note on AI
+
+AI tools were used to help structure and write the code in this repository. All of its outputs, including every map shown here, were checked by a person before being committed. 
