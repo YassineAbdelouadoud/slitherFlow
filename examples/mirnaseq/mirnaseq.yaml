@@ -1,0 +1,114 @@
+# Finished map of the GDSC miRNA-seq pipeline, started from `slitherflow draft --scan` (rulegraph_scan.dot).
+# Render:  slitherflow render examples/mirnaseq/mirnaseq.yaml --png --pdf
+
+title: "GDSC miRNA-seq pipeline"
+subtitle: "v2  ·  Snakemake  ·  Dartmouth Genomic Data Science Core"
+
+input: {label: "Input", sublabel: "Small RNA, single-end", file: "FASTQ"}
+
+trunk:                                   # every sample's reads go through these
+  stations:
+    - {name: "Trimming", tool: "cutadapt"}
+  lines: [isomirs, umi, align, qc]       # top -> bottom on the trunk
+
+lines:
+  isomirs:
+    name: "isomiR quantification"
+    color: "#009E73"
+    row: -1.2
+    stations:
+      - {name: "Collapse reads", tool: "seqcluster", x: 840}   # room for the UMI line to run flat past its label
+      - {name: "Hairpin alignment", tool: "Bowtie"}
+      - {name: "isomiR annotation", tool: "miRtop"}
+      - {name: "Long table", tool: "R"}
+      - name: "Count table"
+        tool: "R"
+        feeds: [{line: spike, station: "Normalization"}]
+        outputs: [{file: "CSV", label: "isomiR counts", dx: 175, dy: 80}]   # below right: the feed to Normalization goes up
+      - name: "PCA"
+        tool: "Python"
+        outputs: [{file: "PNG", label: "PCA plots"}]
+  hairpin_stats:
+    from: {line: isomirs, station: "Hairpin alignment"}
+    row: -1.8
+    stations: [{name: "Hairpin stats", tool: "samtools"}]
+  mirtop_stats:
+    from: {line: isomirs, station: "isomiR annotation"}
+    row: -1.8
+    stations: [{name: "miRtop stats", tool: "miRtop"}]
+
+  umi:
+    name: "UMI processing"
+    color: "#56B4E9"
+    optional: true
+    row: 0
+    to: {line: isomirs, station: "Collapse reads"}
+    stations:
+      - {name: "UMI extraction", tool: "UMI-tools", x: 600,
+         feeds: [{line: align, station: "Mature alignment"}]}
+
+  qc:
+    name: "Quality control"
+    color: "#CC79A7"
+    row: 3
+    to: terminus
+    stations:
+      - {name: "FastQC", tool: "FastQC"}
+      - {name: "Report config", tool: "bash"}
+
+  align:
+    name: "miRNA & genome alignment"
+    color: "#0072B2"
+    row: 1.2
+    to: terminus
+    stations:
+      - {name: "Mature alignment", tool: "Bowtie2"}
+      - {name: "Genome alignment", tool: "Bowtie2 · unaligned reads"}
+      - name: "Gene counts"
+        tool: "featureCounts"
+        outputs: [{file: "TSV", label: "Gene counts"}]
+      - name: "Alignment metrics"
+        tool: "Python"
+        outputs: [{file: "XLSX", label: "Metrics table"}]
+  mature_stats:
+    from: {line: align, station: "Mature alignment"}
+    row: 0.6
+    stations: [{name: "Mature stats", tool: "samtools"}]
+  genome_stats:
+    from: {line: align, station: "Genome alignment"}
+    row: 1.8
+    stations: [{name: "Genome stats", tool: "samtools"}]
+  mature_dedup:                          # UMI deduplication: own colour, same legend entry as the UMI line
+    from: {line: align, station: "Mature alignment"}
+    name: "UMI processing"
+    color: "#56B4E9"
+    optional: true
+    row: 0
+    stations: [{name: "Mature dedup", tool: "UMI-tools"}]
+  genome_dedup:
+    from: {line: align, station: "Genome alignment"}
+    name: "UMI processing"
+    color: "#56B4E9"
+    optional: true
+    row: 2.4
+    stations: [{name: "Genome dedup", tool: "UMI-tools"}]
+
+  spike:
+    name: "Spike-in normalization"
+    color: "#D55E00"
+    optional: true
+    from: "Trimming"
+    row: -2.6
+    stations:
+      - {name: "Spike-in alignment", tool: "Bowtie"}
+      - {name: "Spike-in counts", tool: "BBDuk"}
+      - {name: "Count summary", tool: "Python"}
+      - name: "Normalization"
+        tool: "R"
+        outputs: [{file: "TSV", label: "Normalized counts"}]
+
+terminus: {name: "MultiQC", sublabel: "QC report", row: 2.1, file: "HTML"}
+
+footnote: >-
+  Dashed lines are switched on in config.yaml: use_spikeins adds the spike-in line, use_umitools adds UMI extraction
+  and deduplication. With UMIs on, the stats and gene counts use the deduplicated reads.

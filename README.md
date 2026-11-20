@@ -6,9 +6,9 @@
 
 slitherFlow turns a Snakemake pipeline into a subway-map figure, in the style of the nf-core pipeline diagrams. It reads your pipeline's rule graph, writes a first draft of the map as a YAML file, and draws it as an SVG (plus PNG or PDF if you want them). You then edit the YAML until the map tells the story you want.
 
-![CUT&RUN pipeline map](examples/cutrun/cutrun.png)
+![miRNA-seq pipeline map](examples/mirnaseq/mirnaseq.png)
 
-*The GDSC CUT&RUN pipeline, drawn with slitherFlow.*
+*The GDSC miRNA-seq pipeline, drawn with slitherFlow. The first draft came from `--scan`, so every optional step is on the map.*
 
 ## Installation
 
@@ -18,11 +18,11 @@ cd slitherFlow
 pip install .
 ```
 
-This installs the `slitherflow` command. If you'd rather not install anything, you can run the script directly with `python3 slitherflow.py` instead. The only Python dependency is PyYAML.
+This installs the `slitherflow` command. If you'd rather not install anything, run `python3 -m slitherflow` from the `slitherFlow` folder instead. The only Python dependency is PyYAML.
 
 You'll also want:
 
-- **Snakemake** on your `PATH`, so slitherFlow can read your pipeline's rule graph. You don't need it if you already have a saved rule graph (see below).
+- **Snakemake** on your `PATH`, so slitherFlow can read your pipeline's rule graph. You don't need it if you use `--scan` or already have a saved rule graph (see below).
 - **rsvg-convert** for PNG and PDF output. On a Mac, run `brew install librsvg`. On Debian or Ubuntu, run `apt install librsvg2-bin`. SVG output works without it.
 
 ## Quick start
@@ -44,6 +44,18 @@ If your pipeline needs a particular config file or profile to build its graph, p
 ```shell
 slitherflow auto /path/to/my-pipeline --png -- --configfile config/test.yaml
 ```
+
+### Show every optional step
+
+Snakemake's rule graph only includes the rules your current config uses. If rRNA removal is switched off, for example, the rRNA step won't be on the map. To draw every rule no matter how the pipeline is configured, use `--scan`:
+
+```shell
+slitherflow auto /path/to/my-pipeline --png --scan
+```
+
+Instead of running Snakemake, this reads every `Snakefile` and `.smk` file in the project (hidden and `test`/`tests` folders are skipped). It works out which rules connect by matching each rule's inputs against other rules' outputs, the same way Snakemake does. It follows variables, `expand()`, f-strings, helper functions, input functions and `rules.X.output`, and anything that depends on the config is treated like a wildcard. Only rules that lead to `rule all` are kept, so helper rules for building references don't clutter the map.
+
+A scanned map shows every path the pipeline can take, so it's usually busier than the default one. Alternative steps (say, two aligners) appear side by side, and you'll probably want to mark the optional ones with `optional: true`. The scan is a best effort: paths built from the sample sheet at run time, or rules imported with `use rule ... from`, can't always be followed. If a connection is missing, compare with `snakemake --rulegraph`, or add it yourself with `feeds`.
 
 ### Try it on the bundled example
 
@@ -176,7 +188,7 @@ footnote: "PCA runs only when there are enough samples."
 style: {font: "Helvetica", line_width: 8}
 ```
 
-For a complete before-and-after, compare the CUT&RUN draft ([`cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml)) with the finished map at the top of this page ([`cutrun.yaml`](examples/cutrun/cutrun.yaml)).
+For a complete before-and-after, compare the CUT&RUN draft ([`cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml)) with the finished map ([`cutrun.yaml`](examples/cutrun/cutrun.yaml)).
 
 | Draft, straight from `auto` | After editing |
 |---|---|
@@ -193,22 +205,26 @@ slitherFlow only looks at the shape of the rule graph. It never guesses from rul
 - **Extra connections:** any link in the rule graph that isn't already part of a line is drawn as a `feeds` connector. The exception is inputs to the end station, since drawing every QC file going into MultiQC would clutter the map.
 - **End station:** the final rule that collects from the most other rules. If no final rule merges branches, the map has no end station, and each line just stops.
 
+This works the same whether the graph came from Snakemake or from `--scan`.
+
 Rule `all` is always skipped. If your pipeline runs MultiQC inside rule `all` (as the miRNA-seq pipeline does), MultiQC won't be in the rule graph and won't be on the draft map. You can add it back as the terminus yourself.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `slitherflow auto PROJECT [-o map.svg] [--png] [--pdf] [--strict]` | Writes a draft (if there isn't one yet) and renders it |
-| `slitherflow draft PROJECT [-o spec.yaml]` | Only writes the draft |
+| `slitherflow auto PROJECT [-o map.svg] [--scan] [--png] [--pdf] [--strict]` | Writes a draft (if there isn't one yet) and renders it |
+| `slitherflow draft PROJECT [-o spec.yaml] [--scan]` | Only writes the draft |
 | `slitherflow render SPEC [-o map.svg] [--png] [--pdf] [--strict]` | Renders a YAML spec |
 
 `auto` and `draft` also accept:
 
+- `--scan` to read the Snakefiles directly instead of running Snakemake (see [Show every optional step](#show-every-optional-step))
 - `--rulegraph FILE.dot` to use a saved `snakemake --rulegraph` output instead of running Snakemake
+- `--save-rulegraph FILE.dot` to keep a copy of the rule graph that was used, from Snakemake or from `--scan`
 - `--snakemake PATH` to use a specific Snakemake executable
 
-slitherFlow runs `snakemake --rulegraph --nolock`, so it's safe to use while the pipeline is running.
+slitherFlow runs `snakemake --rulegraph --nolock`, so it's safe to use while the pipeline is running. `slitherflow --version` prints the version.
 
 Every render checks for overlapping labels, icons and lines, and prints anything it finds. With `--strict`, it exits with an error instead, which is useful in CI. The check estimates text widths, so always look at the final image too.
 
@@ -287,7 +303,8 @@ Each example folder includes the pipeline's saved rule graph, so you can rebuild
 
 | Example | Spec | Notes |
 |---|---|---|
-| CUT&RUN, finished | [`cutrun/cutrun.yaml`](examples/cutrun/cutrun.yaml) | The map at the top of this page |
+| miRNA-seq, finished | [`mirnaseq/mirnaseq.yaml`](examples/mirnaseq/mirnaseq.yaml) | The map at the top of this page. Started from `--scan`, with optional steps dashed |
+| CUT&RUN, finished | [`cutrun/cutrun.yaml`](examples/cutrun/cutrun.yaml) | The CUT&RUN draft below, after editing |
 | CUT&RUN, draft | [`cutrun/cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml) | Exactly what `draft` writes. Includes two `feeds` connectors |
 | miRNA-seq, draft | [`mirnaseq/mirnaseq_draft.yaml`](examples/mirnaseq/mirnaseq_draft.yaml) | Lots of branches, and an end station that isn't MultiQC |
 
@@ -300,6 +317,8 @@ slitherflow render examples/cutrun/cutrun_draft.yaml --png --pdf
 slitherflow draft GDSC-miRNAseq-analysis-pipeline --rulegraph examples/mirnaseq/rulegraph.dot -o examples/mirnaseq/mirnaseq_draft.yaml
 slitherflow render examples/mirnaseq/mirnaseq_draft.yaml --png --pdf
 ```
+
+`examples/mirnaseq/rulegraph_scan.dot` is the graph `--scan` found for the miRNA-seq pipeline, which the finished map started from. Pass it to `--rulegraph` the same way to see that draft.
 
 When you use `--rulegraph`, the project name is only used for the map's title.
 
@@ -316,9 +335,25 @@ The tests don't need Snakemake or rsvg-convert. They check that:
 - every rule in each saved rule graph gets a station, and no connection is dropped;
 - the right end station is picked;
 - nothing overlaps;
-- bad specs fail with a useful message.
+- bad specs fail with a useful message;
+- `--scan` follows each pattern it claims to, using the small made-up workflow in `tests/data/scan_project`.
 
 If you change how maps are drawn on purpose, re-render the examples with the commands above, look at the new images, and commit them along with your change. The same tests run on GitHub for every push.
+
+## How the code is organized
+
+The code lives in the `slitherflow/` package, one file per job:
+
+| File | What it does |
+|---|---|
+| `cli.py` | The `slitherflow` command: `auto`, `draft` and `render` |
+| `rulegraph.py` | Runs `snakemake --rulegraph` in a project |
+| `scan.py` | `--scan`: builds the rule graph by reading Snakefiles and `.smk` files |
+| `draft.py` | Turns a rule graph into a starter YAML spec (trunk, lines, branches, end station) |
+| `render.py` | Lays out a spec and draws it as SVG |
+| `canvas.py` | SVG drawing helpers, which also record what was drawn where |
+| `overlaps.py` | The overlap check |
+| `style.py` | Colours, sizes and spacing |
 
 ## A note on AI
 

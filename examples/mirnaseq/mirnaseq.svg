@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1937 1070" width="1937" height="1070">
+<rect width="1937" height="1070" fill="#ffffff"/>
+<text x="48.0" y="56.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#1f2328" text-anchor="start">GDSC miRNA-seq pipeline</text>
+<text x="48.0" y="84.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="400" fill="#59636e" text-anchor="start">v2  ·  Snakemake  ·  Dartmouth Genomic Data Science Core</text>
+<path d="M980.8,342.0 L1043.3,279.6 Q1058.8,264.0 1080.8,264.0 L1120.8,264.0" fill="none" stroke="#009E73" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M1134.8,342.0 L1197.2,279.6 Q1212.8,264.0 1234.8,264.0 L1274.8,264.0" fill="none" stroke="#009E73" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M846.0,654.0 L908.4,591.6 Q924.0,576.0 946.0,576.0 L1052.7,576.0" fill="none" stroke="#0072B2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M1004.4,654.0 L1066.9,716.4 Q1082.4,732.0 1104.4,732.0 L1211.1,732.0" fill="none" stroke="#0072B2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M846.0,654.0 L986.4,513.6 Q1002.0,498.0 1024.0,498.0 L1062.0,498.0" fill="none" stroke="#56B4E9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<path d="M1004.4,654.0 L1144.9,794.4 Q1160.4,810.0 1182.4,810.0 L1220.4,810.0" fill="none" stroke="#56B4E9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<path d="M248.0,470.0 L248.0,182.0 Q248.0,160.0 270.0,160.0 L1686.8,160.0" fill="none" stroke="#D55E00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<path d="M112.0,513.0 L256.0,513.0 Q278.0,513.0 293.6,528.6 L637.4,872.4 Q653.0,888.0 675.0,888.0 L1771.8,888.0 Q1793.8,888.0 1793.8,866.0 L1793.8,798.0" fill="none" stroke="#CC79A7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M112.0,503.0 L256.0,503.0 Q278.0,503.0 293.6,518.6 L413.4,638.4 Q429.0,654.0 451.0,654.0 L1757.8,654.0 Q1779.8,654.0 1779.8,676.0 L1779.8,744.0" fill="none" stroke="#0072B2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M112.0,493.0 L274.5,493.0 Q278.0,493.0 280.5,495.5 L280.5,495.5 Q283.0,498.0 286.5,498.0 L662.0,498.0 Q684.0,498.0 699.6,482.4 L832.0,350.0" fill="none" stroke="#56B4E9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<path d="M112.0,483.0 L256.0,483.0 Q278.0,483.0 293.6,467.4 L403.4,357.6 Q419.0,342.0 441.0,342.0 L1554.8,342.0" fill="none" stroke="#009E73" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M112.0,493.0 L274.5,493.0 Q278.0,493.0 280.5,495.5 L280.5,495.5 Q283.0,498.0 286.5,498.0 L662.0,498.0 Q684.0,498.0 699.6,482.4 L832.0,350.0" fill="none" stroke="#56B4E9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<path d="M1427.5,329.3 L1516.2,240.6 Q1531.8,225.0 1553.8,225.0 L1599.8,225.0 Q1621.8,225.0 1637.3,209.4 L1674.0,172.7" fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M1414.8,342.0 L1516.2,240.6 Q1531.8,225.0 1553.8,225.0 L1599.8,225.0 Q1621.8,225.0 1637.3,209.4 L1686.8,160.0" fill="none" stroke="#009E73" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M612.7,510.7 L675.4,573.4 Q691.0,589.0 713.0,589.0 L759.0,589.0 Q781.0,589.0 796.6,604.6 L833.3,641.3" fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M600.0,498.0 L675.4,573.4 Q691.0,589.0 713.0,589.0 L759.0,589.0 Q781.0,589.0 796.6,604.6 L846.0,654.0" fill="none" stroke="#56B4E9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<rect x="235.0" y="470.0" width="26" height="56.0" rx="13.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="248.0" y="549.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Trimming</text>
+<text x="248.0" y="566.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">cutadapt</text>
+<circle cx="840.0" cy="342.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="840.0" y="308.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Collapse reads</text>
+<text x="840.0" y="325.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">seqcluster</text>
+<circle cx="980.8" cy="342.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="980.8" y="378.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Hairpin alignment</text>
+<text x="980.8" y="395.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Bowtie</text>
+<circle cx="1134.8" cy="342.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1134.8" y="378.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">isomiR annotation</text>
+<text x="1134.8" y="395.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">miRtop</text>
+<circle cx="1274.8" cy="342.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1274.8" y="308.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Long table</text>
+<text x="1274.8" y="325.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">R</text>
+<circle cx="1414.8" cy="342.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1414.8" y="378.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Count table</text>
+<text x="1414.8" y="395.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">R</text>
+<circle cx="1554.8" cy="342.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1554.8" y="308.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">PCA</text>
+<text x="1554.8" y="325.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Python</text>
+<circle cx="1120.8" cy="264.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1120.8" y="230.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Hairpin stats</text>
+<text x="1120.8" y="247.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">samtools</text>
+<circle cx="1274.8" cy="264.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1274.8" y="230.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">miRtop stats</text>
+<text x="1274.8" y="247.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">miRtop</text>
+<circle cx="600.0" cy="498.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="600.0" y="464.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">UMI extraction</text>
+<text x="600.0" y="481.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">UMI-tools</text>
+<circle cx="713.0" cy="888.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="713.0" y="924.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">FastQC</text>
+<text x="713.0" y="941.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">FastQC</text>
+<circle cx="853.0" cy="888.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="853.0" y="924.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Report config</text>
+<text x="853.0" y="941.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">bash</text>
+<circle cx="846.0" cy="654.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="846.0" y="690.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mature alignment</text>
+<text x="846.0" y="707.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Bowtie2</text>
+<circle cx="1004.4" cy="654.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1004.4" y="620.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Genome alignment</text>
+<text x="1004.4" y="637.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Bowtie2 · unaligned reads</text>
+<circle cx="1144.4" cy="654.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1144.4" y="690.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Gene counts</text>
+<text x="1144.4" y="707.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">featureCounts</text>
+<circle cx="1284.4" cy="654.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1284.4" y="690.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Alignment metrics</text>
+<text x="1284.4" y="707.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Python</text>
+<circle cx="1052.7" cy="576.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1052.7" y="542.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mature stats</text>
+<text x="1052.7" y="559.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">samtools</text>
+<circle cx="1211.1" cy="732.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1211.1" y="768.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Genome stats</text>
+<text x="1211.1" y="785.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">samtools</text>
+<circle cx="1062.0" cy="498.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1062.0" y="464.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mature dedup</text>
+<text x="1062.0" y="481.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">UMI-tools</text>
+<circle cx="1220.4" cy="810.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1220.4" y="846.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Genome dedup</text>
+<text x="1220.4" y="863.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">UMI-tools</text>
+<circle cx="503.0" cy="160.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="503.0" y="126.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Spike-in alignment</text>
+<text x="503.0" y="143.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Bowtie</text>
+<circle cx="690.0" cy="160.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="690.0" y="126.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Spike-in counts</text>
+<text x="690.0" y="143.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">BBDuk</text>
+<circle cx="877.0" cy="160.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="877.0" y="126.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Count summary</text>
+<text x="877.0" y="143.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Python</text>
+<circle cx="1686.8" cy="160.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1686.8" y="126.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Normalization</text>
+<text x="1686.8" y="143.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">R</text>
+<rect x="1768.8" y="739.0" width="36" height="64.0" rx="18.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1817.8" y="767.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2328" text-anchor="start">MultiQC</text>
+<text x="1817.8" y="786.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">QC report</text>
+<path d="M47.0,469.0 H80.0 L93.0,482.0 V527.0 H47.0 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M80.0,469.0 V482.0 H93.0" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="42.0" y="496.0" width="56.0" height="18" rx="3" fill="#57606a"/>
+<text x="70.0" y="510.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">FASTQ</text>
+<text x="70.0" y="440.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Input</text>
+<text x="70.0" y="456.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="middle">Small RNA, single-end</text>
+<path d="M1426.6,347.4 L1562.8,409.7" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1566.8,393.0 H1599.8 L1612.8,406.0 V451.0 H1566.8 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1599.8,393.0 V406.0 H1612.8" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1561.8" y="420.0" width="56.0" height="18" rx="3" fill="#009E73"/>
+<text x="1589.8" y="434.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">CSV</text>
+<text x="1623.8" y="418.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">isomiR</text>
+<text x="1623.8" y="434.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">counts</text>
+<path d="M1567.8,342.0 L1627.8,342.0" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1631.8,313.0 H1664.8 L1677.8,326.0 V371.0 H1631.8 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1664.8,313.0 V326.0 H1677.8" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1626.8" y="340.0" width="56.0" height="18" rx="3" fill="#009E73"/>
+<text x="1654.8" y="354.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">PNG</text>
+<text x="1688.8" y="338.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">PCA plots</text>
+<path d="M1144.4,641.0 L1144.4,625.0" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1121.4,563.0 H1154.4 L1167.4,576.0 V621.0 H1121.4 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1154.4,563.0 V576.0 H1167.4" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1116.4" y="590.0" width="56.0" height="18" rx="3" fill="#0072B2"/>
+<text x="1144.4" y="604.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">TSV</text>
+<text x="1178.4" y="588.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">Gene</text>
+<text x="1178.4" y="604.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">counts</text>
+<path d="M1284.4,641.0 L1284.4,625.0" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1261.4,563.0 H1294.4 L1307.4,576.0 V621.0 H1261.4 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1294.4,563.0 V576.0 H1307.4" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1256.4" y="590.0" width="56.0" height="18" rx="3" fill="#0072B2"/>
+<text x="1284.4" y="604.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">XLSX</text>
+<text x="1318.4" y="588.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">Metrics</text>
+<text x="1318.4" y="604.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">table</text>
+<path d="M1699.8,160.0 L1759.8,160.0" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1763.8,131.0 H1796.8 L1809.8,144.0 V189.0 H1763.8 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1796.8,131.0 V144.0 H1809.8" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1758.8" y="158.0" width="56.0" height="18" rx="3" fill="#D55E00"/>
+<text x="1786.8" y="172.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">TSV</text>
+<text x="1820.8" y="156.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">Normalized</text>
+<text x="1820.8" y="172.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">counts</text>
+<path d="M1810.5,798.0 L1833.8,824.4" fill="none" stroke="#8c959f" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+<path d="M1837.8,826.0 H1870.8 L1883.8,839.0 V884.0 H1837.8 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M1870.8,826.0 V839.0 H1883.8" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="1832.8" y="853.0" width="56.0" height="18" rx="3" fill="#CC79A7"/>
+<text x="1860.8" y="867.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">HTML</text>
+<line x1="48" y1="969.8" x2="1888.8" y2="969.8" stroke="#d0d7de" stroke-width="1.5"/>
+<line x1="48" y1="1005.8" x2="94" y2="1005.8" stroke="#009E73" stroke-width="7" stroke-linecap="round"/>
+<text x="106.0" y="1010.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">isomiR quantification</text>
+<line x1="291.82000000000005" y1="1005.8" x2="337.82000000000005" y2="1005.8" stroke="#56B4E9" stroke-width="7" stroke-linecap="round" stroke-dasharray="16 9"/>
+<text x="349.8" y="1010.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">UMI processing (optional)</text>
+<line x1="565.32" y1="1005.8" x2="611.32" y2="1005.8" stroke="#CC79A7" stroke-width="7" stroke-linecap="round"/>
+<text x="623.3" y="1010.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Quality control</text>
+<line x1="764.6200000000001" y1="1005.8" x2="810.6200000000001" y2="1005.8" stroke="#0072B2" stroke-width="7" stroke-linecap="round"/>
+<text x="822.6" y="1010.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">miRNA &amp; genome alignment</text>
+<line x1="1030.7000000000003" y1="1005.8" x2="1076.7000000000003" y2="1005.8" stroke="#D55E00" stroke-width="7" stroke-linecap="round" stroke-dasharray="16 9"/>
+<text x="1088.7" y="1010.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Spike-in normalization (optional)</text>
+<circle cx="1373.5600000000004" cy="1005.8" r="9" fill="#ffffff" stroke="#1f2328" stroke-width="3"/>
+<text x="1390.6" y="1010.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Step</text>
+<text x="48.0" y="1039.8" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">Dashed lines are switched on in config.yaml: use_spikeins adds the spike-in line, use_umitools adds UMI extraction and deduplication. With UMIs on, the stats and gene counts use the deduplicated reads.</text>
+</svg>
