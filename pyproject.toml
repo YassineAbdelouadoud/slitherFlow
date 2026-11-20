@@ -4,14 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "slitherflow"
-version = "0.1.0"
-description = "slitherFlow: draw Snakemake pipelines as nf-core-style subway (metro) maps"
+version = "1.0.0"
+description = "slitherFlow: subway maps for Snakemake pipelines"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = ["pyyaml>=5"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
 
 [project.scripts]
 slitherflow = "slitherflow:main"
 
 [tool.setuptools]
 py-modules = ["slitherflow"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

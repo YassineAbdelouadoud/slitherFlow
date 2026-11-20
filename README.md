@@ -1,5 +1,9 @@
 # slitherFlow <img src="logo/slitherflow_hex.png" alt="slitherFlow logo" align="right" width="150"/>
 
+**Subway maps for Snakemake pipelines.**
+
+![Version 1.0](https://img.shields.io/badge/version-1.0-009E73)
+
 slitherFlow turns a Snakemake pipeline into a subway-map figure, in the style of the nf-core pipeline diagrams. It reads your pipeline's rule graph, writes a first draft of the map as a YAML file, and draws it as an SVG (plus PNG or PDF if you want them). You then edit the YAML until the map tells the story you want.
 
 ![CUT&RUN pipeline map](examples/cutrun/cutrun.png)
@@ -298,6 +302,23 @@ slitherflow render examples/mirnaseq/mirnaseq_draft.yaml --png --pdf
 ```
 
 When you use `--rulegraph`, the project name is only used for the map's title.
+
+## Running the tests
+
+```shell
+pip install ".[test]"
+pytest
+```
+
+The tests don't need Snakemake or rsvg-convert. They check that:
+
+- the example maps still render exactly as committed;
+- every rule in each saved rule graph gets a station, and no connection is dropped;
+- the right end station is picked;
+- nothing overlaps;
+- bad specs fail with a useful message.
+
+If you change how maps are drawn on purpose, re-render the examples with the commands above, look at the new images, and commit them along with your change. The same tests run on GitHub for every push.
 
 ## A note on AI
 
