@@ -1,0 +1,32 @@
+digraph snakemake_dag {
+    graph[bgcolor=white, margin=0];
+    node[shape=box, style=rounded, fontname=sans,                 fontsize=10, penwidth=2];
+    edge[penwidth=2, color=grey];
+	0[label = "all", color = "0.11 0.6 0.85", style="rounded"];
+	1[label = "trimming", color = "0.61 0.6 0.85", style="rounded"];
+	2[label = "ribodetector", color = "0.50 0.6 0.85", style="rounded"];
+	3[label = "ribodetector_mqc_summary", color = "0.56 0.6 0.85", style="rounded"];
+	4[label = "alignment", color = "0.00 0.6 0.85", style="rounded"];
+	5[label = "picard_markdup", color = "0.44 0.6 0.85", style="rounded"];
+	6[label = "picard_collectmetrics", color = "0.39 0.6 0.85", style="rounded"];
+	7[label = "alignment_metrics", color = "0.06 0.6 0.85", style="rounded"];
+	8[label = "featurecounts", color = "0.28 0.6 0.85", style="rounded"];
+	9[label = "pca_plots", color = "0.33 0.6 0.85", style="rounded"];
+	7 -> 0
+	1 -> 0
+	2 -> 0
+	8 -> 0
+	6 -> 0
+	4 -> 0
+	9 -> 0
+	5 -> 0
+	3 -> 0
+	1 -> 2
+	2 -> 3
+	2 -> 4
+	4 -> 5
+	5 -> 6
+	4 -> 7
+	4 -> 8
+	8 -> 9
+}            
