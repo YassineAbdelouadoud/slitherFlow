@@ -1,0 +1,73 @@
+# Starter slitherFlow spec generated from `snakemake --rulegraph`.
+# Rename stations, add tools/outputs, regroup lines and tune rows, then render with:
+#   slitherflow render this.yaml -o map.svg --png --pdf
+
+title: "GDSC-CUT-RUN-pipeline"
+subtitle: "v1.0  ·  Snakemake"
+input: {label: "Input", sublabel: "", file: "FASTQ"}
+
+trunk:                      # steps every sample goes through
+  stations:
+    - {name: "Trimming", tool: ""}
+    - {name: "Alignment", tool: ""}
+    - {name: "Filter alignment", tool: ""}
+  lines: [line4, line1, line3, line2, line5]   # top -> bottom on the trunk
+
+lines:
+  line1:
+    name: "Peak calling narrow"
+    row: -1            # negative = above the trunk
+    to: "terminus"
+    stations:
+      - {name: "Peak calling narrow", tool: ""}
+      - {name: "Filter peaks", tool: ""}
+      - {name: "Calc frip", tool: ""}
+      - {name: "Frip summary", tool: ""}
+  line2:
+    name: "Peak calling broad"
+    row: 1
+    to: {line: line1, station: "Filter peaks"}
+    stations:
+      - {name: "Peak calling broad", tool: ""}
+  line3:
+    name: "Plot fingerprint"
+    row: 0
+    to: "terminus"
+    stations:
+      - {name: "Plot fingerprint", tool: ""}
+  line4:
+    name: "Plot fragments"
+    row: -2            # negative = above the trunk
+    to: "terminus"
+    stations:
+      - {name: "Plot fragments", tool: ""}
+  line5:
+    name: "Generate signal tracks"
+    row: 2
+    to: "none"
+    stations:
+      - {name: "Generate signal tracks", tool: ""}
+  side6:
+    name: "Spikein alignment"
+    from: "Trimming"
+    row: -2.6            # negative = above the trunk
+    optional: true         # dashed; delete if the step always runs
+    to: "terminus"
+    stations:
+      - {name: "Spikein alignment", tool: ""}
+      - {name: "Calculate scale factors", tool: ""}
+      - {name: "Spikein summary", tool: ""}
+  side7:
+    name: "Count barcodes"
+    from: "input"
+    row: 2.6
+    optional: true         # dashed; delete if the step always runs
+    to: "terminus"
+    stations:
+      - {name: "Count barcodes", tool: ""}
+      - {name: "Barcode summary", tool: ""}
+
+# terminus: rule 'multiqc', the end rule that collects from the most rules (9 inputs)
+terminus: {name: "Multiqc", sublabel: "", row: 0}   # add file: "<type>" for an output icon
+
+footnote: ""

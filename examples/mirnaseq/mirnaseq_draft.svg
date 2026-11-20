@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1614 671" width="1614" height="671">
+<rect width="1614" height="671" fill="#ffffff"/>
+<text x="48.0" y="56.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#1f2328" text-anchor="start">GDSC-miRNAseq-analysis-pipeline</text>
+<text x="48.0" y="84.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="400" fill="#59636e" text-anchor="start">v1.0  ·  Snakemake</text>
+<path d="M86.0,350.0 L86.0,502.0 Q86.0,524.0 108.0,524.0 L341.0,524.0" fill="none" stroke="#D55E00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="16 9"/>
+<path d="M458.0,316.0 L520.4,253.6 Q536.0,238.0 558.0,238.0 L598.0,238.0" fill="none" stroke="#CC79A7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M598.9,446.0 L661.3,508.4 Q676.9,524.0 698.9,524.0 L738.9,524.0" fill="none" stroke="#E69F00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M611.9,316.0 L752.3,175.6 Q767.9,160.0 789.9,160.0 L1269.8,160.0 Q1291.8,160.0 1291.8,182.0 L1291.8,289.0" fill="none" stroke="#CC79A7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M738.9,446.0 L801.3,383.6 Q816.9,368.0 838.9,368.0 L878.9,368.0" fill="none" stroke="#E69F00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M112.0,326.0 L256.0,326.0 Q278.0,326.0 293.6,341.6 L382.4,430.4 Q398.0,446.0 420.0,446.0 L1198.8,446.0" fill="none" stroke="#E69F00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M112.0,316.0 L256.0,316.0 Q278.0,316.0 300.0,316.0 L751.9,316.0" fill="none" stroke="#CC79A7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M112.0,306.0 L256.0,306.0 Q278.0,306.0 293.6,290.4 L382.4,201.6 Q398.0,186.0 420.0,186.0 L458.0,186.0" fill="none" stroke="#009E73" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="235.0" y="293.0" width="26" height="46.0" rx="13.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="248.0" y="362.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Trimming</text>
+<circle cx="458.0" cy="186.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="458.0" y="152.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Trimmed fastqc</text>
+<circle cx="458.0" cy="446.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="458.0" y="482.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Seqcluster</text>
+<circle cx="598.9" cy="446.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="598.9" y="412.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Collapsed hairpin aln</text>
+<circle cx="738.9" cy="446.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="738.9" y="482.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mirtop</text>
+<circle cx="878.9" cy="446.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="878.9" y="482.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Pivot isomirs longer</text>
+<circle cx="1058.8" cy="446.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1058.8" y="482.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Collate isomir table</text>
+<circle cx="1198.8" cy="446.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1198.8" y="482.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Pca plots</text>
+<circle cx="458.0" cy="316.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="458.0" y="352.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mirbase padded aln</text>
+<circle cx="611.9" cy="316.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="611.9" y="352.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Genome alignment</text>
+<circle cx="751.9" cy="316.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="751.9" y="352.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Genome stats</text>
+<circle cx="341.0" cy="524.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="341.0" y="560.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Make fastqc config</text>
+<circle cx="598.0" cy="238.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="598.0" y="204.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mature mirbase stats</text>
+<circle cx="738.9" cy="524.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="738.9" y="560.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Hairpin stats</text>
+<circle cx="827.9" cy="160.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="827.9" y="126.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Genome featureCounts</text>
+<circle cx="878.9" cy="368.0" r="11" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="878.9" y="404.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Mirtop stats</text>
+<rect x="1280.8" y="284.0" width="36" height="64.0" rx="18.0" fill="#ffffff" stroke="#1f2328" stroke-width="3.2"/>
+<text x="1329.8" y="312.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2328" text-anchor="start">Alignment metrics counts</text>
+<path d="M47.0,287.0 H80.0 L93.0,300.0 V345.0 H47.0 Z" fill="#ffffff" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M80.0,287.0 V300.0 H93.0" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round"/>
+<rect x="42.0" y="314.0" width="56.0" height="18" rx="3" fill="#57606a"/>
+<text x="70.0" y="328.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">FASTQ</text>
+<text x="70.0" y="258.0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="middle">Input</text>
+<line x1="48" y1="589.3" x2="1566.5" y2="589.3" stroke="#d0d7de" stroke-width="1.5"/>
+<line x1="48" y1="625.3" x2="94" y2="625.3" stroke="#009E73" stroke-width="7" stroke-linecap="round"/>
+<text x="106.0" y="630.3" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Trimmed fastqc</text>
+<line x1="239.88" y1="625.3" x2="285.88" y2="625.3" stroke="#E69F00" stroke-width="7" stroke-linecap="round"/>
+<text x="297.9" y="630.3" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Seqcluster</text>
+<line x1="402.08" y1="625.3" x2="448.08" y2="625.3" stroke="#CC79A7" stroke-width="7" stroke-linecap="round"/>
+<text x="460.1" y="630.3" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Mirbase padded aln</text>
+<line x1="623.64" y1="625.3" x2="669.64" y2="625.3" stroke="#D55E00" stroke-width="7" stroke-linecap="round" stroke-dasharray="16 9"/>
+<text x="681.6" y="630.3" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Make fastqc config (optional)</text>
+<circle cx="936.8199999999999" cy="625.3" r="9" fill="#ffffff" stroke="#1f2328" stroke-width="3"/>
+<text x="953.8" y="630.3" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#1f2328" text-anchor="start">Step</text>
+</svg>

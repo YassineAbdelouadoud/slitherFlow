@@ -1,0 +1,76 @@
+# Starter slitherFlow spec generated from `snakemake --rulegraph`.
+# Rename stations, add tools/outputs, regroup lines and tune rows, then render with:
+#   slitherflow render this.yaml -o map.svg --png --pdf
+
+title: "GDSC-miRNAseq-analysis-pipeline"
+subtitle: "v1.0  ·  Snakemake"
+input: {label: "Input", sublabel: "", file: "FASTQ"}
+
+trunk:                      # steps every sample goes through
+  stations:
+    - {name: "Trimming", tool: ""}
+  lines: [line1, line3, line2]   # top -> bottom on the trunk
+
+lines:
+  line1:
+    name: "Trimmed fastqc"
+    row: -1            # negative = above the trunk
+    to: "none"
+    stations:
+      - {name: "Trimmed fastqc", tool: ""}
+  line2:
+    name: "Seqcluster"
+    row: 1
+    to: "none"
+    stations:
+      - {name: "Seqcluster", tool: ""}
+      - {name: "Collapsed hairpin aln", tool: ""}
+      - {name: "Mirtop", tool: ""}
+      - {name: "Pivot isomirs longer", tool: ""}
+      - {name: "Collate isomir table", tool: ""}
+      - {name: "Pca plots", tool: ""}
+  line3:
+    name: "Mirbase padded aln"
+    row: 0
+    to: "none"
+    stations:
+      - {name: "Mirbase padded aln", tool: ""}
+      - {name: "Genome alignment", tool: ""}
+      - {name: "Genome stats", tool: ""}
+  side4:
+    name: "Make fastqc config"
+    from: "input"
+    row: 1.6
+    optional: true         # dashed; delete if the step always runs
+    to: "none"
+    stations:
+      - {name: "Make fastqc config", tool: ""}
+  branch5:                    # branch of line3 (same colour and legend entry)
+    from: {line: line3, station: "Mirbase padded aln"}
+    row: -0.6            # negative = above the trunk
+    to: "none"
+    stations:
+      - {name: "Mature mirbase stats", tool: ""}
+  branch6:                    # branch of line2 (same colour and legend entry)
+    from: {line: line2, station: "Collapsed hairpin aln"}
+    row: 1.6
+    to: "none"
+    stations:
+      - {name: "Hairpin stats", tool: ""}
+  branch7:                    # branch of line3 (same colour and legend entry)
+    from: {line: line3, station: "Genome alignment"}
+    row: -1.2            # negative = above the trunk
+    to: "terminus"
+    stations:
+      - {name: "Genome featureCounts", tool: ""}
+  branch8:                    # branch of line2 (same colour and legend entry)
+    from: {line: line2, station: "Mirtop"}
+    row: 0.4
+    to: "none"
+    stations:
+      - {name: "Mirtop stats", tool: ""}
+
+# terminus: rule 'alignment_metrics_counts', the end rule that collects from the most rules (3 inputs)
+terminus: {name: "Alignment metrics counts", sublabel: "", row: 0}   # add file: "<type>" for an output icon
+
+footnote: ""

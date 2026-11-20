@@ -60,7 +60,39 @@ slitherflow auto ~/pipelines/my-rnaseq -- --configfile config/test.yaml
 - **Branches:** every rule a line passed by branches off the station of its latest input, in the parent line's colour. It takes the nearest free row next to its parent, so it stays clear of lines that cover the same part of the pipeline.
 - **Terminus:** the end station is chosen from the graph shape, not from rule names. It's the rule with nothing downstream (apart from `all`) that collects from the most rules, as long as it collects from at least two. Ties go to the rule with more upstream rules. If no end rule merges branches, the spec has no terminus and each line simply ends.
 
-Rules it can't place (only possible if the rule graph has a cycle) are listed in a comment at the end of the spec. Rule names are prettified ("calc_frip" → "Calc frip"), so expect to rename stations and add tools and outputs. [`examples/cutrun/`](examples/cutrun/) shows a starter turned into a finished map: compare `rulegraph.dot` with `cutrun.yaml`.
+Rules it can't place (only possible if the rule graph has a cycle) are listed in a comment at the end of the spec. Rule names are prettified ("calc_frip" → "Calc frip"), so expect to rename stations and add tools and outputs. The [examples](#examples) show what the starter looks like before and after editing.
+
+## Examples
+
+Each example folder includes the pipeline's saved rule graph (`rulegraph.dot`), so you can rebuild the maps without Snakemake or the pipeline itself.
+
+| Example | Spec | What it shows |
+|---|---|---|
+| CUT&RUN, finished | [`cutrun/cutrun.yaml`](examples/cutrun/cutrun.yaml) | The map at the top of this page: the draft below, after editing |
+| CUT&RUN, draft | [`cutrun/cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml) | The starter spec exactly as `draft` writes it |
+| miRNA-seq, draft | [`mirnaseq/mirnaseq_draft.yaml`](examples/mirnaseq/mirnaseq_draft.yaml) | Branches leaving stations partway along a line, and a terminus that isn't MultiQC |
+
+### CUT&RUN: draft
+
+![CUT&RUN draft](examples/cutrun/cutrun_draft.png)
+
+Every rule is placed, with no edits. The narrow and broad peak-calling lines merge at "Filter peaks". The spike-in and barcode-counting steps become dashed side lines that run to MultiQC, which is the terminus because it collects from the most rules. Compare [`cutrun_draft.yaml`](examples/cutrun/cutrun_draft.yaml) with the finished [`cutrun.yaml`](examples/cutrun/cutrun.yaml) to see the edits: renamed stations, tools and outputs, lines regrouped by purpose, and `x:` positions.
+
+### miRNA-seq: draft
+
+![miRNA-seq draft](examples/mirnaseq/mirnaseq_draft.png)
+
+This pipeline splits again after the trunk, so most stats steps are drawn as branches. For example, "Mature mirbase stats" leaves "Mirbase padded aln", and "Mirtop stats" leaves "Mirtop". Each branch is drawn in its parent line's colour. MultiQC runs inside `rule all` here, so it isn't in the rule graph. The terminus is "Alignment metrics counts" instead: it's the only end rule that collects from more than one rule.
+
+**To rebuild the drafts:** with `--rulegraph`, the project argument only sets the map title.
+
+```shell
+slitherflow draft GDSC-CUT-RUN-pipeline --rulegraph examples/cutrun/rulegraph.dot -o examples/cutrun/cutrun_draft.yaml
+slitherflow render examples/cutrun/cutrun_draft.yaml --png --pdf
+
+slitherflow draft GDSC-miRNAseq-analysis-pipeline --rulegraph examples/mirnaseq/rulegraph.dot -o examples/mirnaseq/mirnaseq_draft.yaml
+slitherflow render examples/mirnaseq/mirnaseq_draft.yaml --png --pdf
+```
 
 ## Overlap check
 
