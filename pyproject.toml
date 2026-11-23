@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "slitherflow"
-dynamic = ["version"]
+version = "1.0.0"
 description = "slitherFlow: subway maps for Snakemake pipelines"
 readme = "README.md"
 license = "MIT"
@@ -21,8 +21,43 @@ slitherflow = "slitherflow.cli:main"
 [tool.setuptools]
 packages = ["slitherflow"]
 
-[tool.setuptools.dynamic]
-version = {attr = "slitherflow.__version__"}
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+preview = ["pixi-build"]
+
+[tool.pixi.dependencies]
+slitherflow = { path = "." }
+
+[tool.pixi.package]
+name = { workspace = true }
+
+[tool.pixi.package.build.backend]
+name = "pixi-build-python"
+version = "0.*"
+
+[tool.pixi.package.build.config]
+ignore-pypi-mapping = false
+
+[tool.pixi.package.host-dependencies]
+setuptools = ">=77"
+
+[tool.pixi.package.run-dependencies]
+librsvg = "*"
+snakemake-minimal = "*"
+
+[tool.pixi.feature.test.dependencies]
+pytest = ">=7"
+
+[tool.pixi.environments]
+test = ["test"]
+
+[tool.pixi.tasks.slitherflow]
+cmd = 'cd "$INIT_CWD" && slitherflow'
+description = "Run the slitherflow CLI from the folder you called pixi in"
+
+[tool.pixi.feature.test.tasks]
+test = "pytest"
