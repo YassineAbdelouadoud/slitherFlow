@@ -9,7 +9,7 @@ description = "slitherFlow: subway maps for Snakemake pipelines"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = ["pyyaml>=5"]
 
 [project.optional-dependencies]
@@ -52,8 +52,15 @@ snakemake-minimal = "*"
 [tool.pixi.feature.test.dependencies]
 pytest = ">=7"
 
+[tool.pixi.feature.py39.dependencies]
+python = "3.9.*"
+
+[tool.pixi.feature.py314.dependencies]
+python = "3.14.*"
+
 [tool.pixi.environments]
-test = ["test"]
+test-py39 = ["test", "py39"]
+test-py314 = ["test", "py314"]
 
 [tool.pixi.tasks.slitherflow]
 cmd = 'cd "$INIT_CWD" && slitherflow'

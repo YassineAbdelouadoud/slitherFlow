@@ -90,11 +90,14 @@ A scanned map shows every path the pipeline can take, so it's usually busier tha
 
 ### Try it on the bundled example
 
-The repo includes a saved rule graph from the GDSC miRNA-seq pipeline, so you can try slitherFlow without Snakemake or the pipeline itself. From the `slitherFlow` folder:
+The repo includes a saved rule graph from the GDSC miRNA-seq pipeline, so you can try slitherFlow without Snakemake or the pipeline itself. Download it and draw the map:
 
 ```shell
-slitherflow auto GDSC-miRNAseq-analysis-pipeline --rulegraph examples/mirnaseq/rulegraph.dot --png
+curl -LO https://raw.githubusercontent.com/mikemartinez99/slitherFlow/main/examples/mirnaseq/rulegraph.dot
+slitherflow auto GDSC-miRNAseq-analysis-pipeline --rulegraph rulegraph.dot --png
 ```
+
+In a clone, skip the download and pass `--rulegraph examples/mirnaseq/rulegraph.dot` from the `slitherFlow` folder.
 
 The result looks like this:
 
@@ -356,10 +359,10 @@ When you use `--rulegraph`, the project name is only used for the map's title.
 ## Running the tests
 
 ```shell
-pixi run test
+pixi run -e test-py314 test
 ```
 
-Without pixi, run `pip install ".[test]"` and then `pytest`. The tests don't need Snakemake or rsvg-convert. They check that:
+Use `test-py39` to test on the oldest supported Python version. Without pixi, run `pip install ".[test]"` and then `pytest`. The tests don't need Snakemake or rsvg-convert. They check that:
 
 - the example maps still render exactly as committed;
 - every rule in each saved rule graph gets a station, and no connection is dropped;
