@@ -77,3 +77,34 @@ def test_warnings_around_the_graph_are_ignored():
     dot = (EXAMPLES / "mirnaseq" / "rulegraph.dot").read_text()
     noisy = "Building DAG of jobs...\nImportError: something unrelated\n" + dot + "\nDone.\n"
     assert slitherflow.spec_from_rulegraph(noisy) == slitherflow.spec_from_rulegraph(dot)
+
+
+def small_dot(edges):
+    names = sorted({n for e in edges for n in e} | {"all"})
+    ids = {n: k for k, n in enumerate(names)}
+    lines = [f'{ids[n]}[label = "{n}"];' for n in names]
+    lines += [f"{ids[a]} -> {ids[b]}" for a, b in edges]
+    return "\n".join(lines) + "\n"
+
+
+def trunk_and_lines(dot):
+    spec = yaml.safe_load(slitherflow.spec_from_rulegraph(dot))
+    trunk = [st["name"] for st in spec["trunk"]["stations"]]
+    lines = sorted([st["name"] for st in ln["stations"]] for ln in spec["lines"].values())
+    return trunk, lines, spec
+
+
+def test_trunk_stops_where_a_small_pipeline_splits():
+    """SnakeBat's shape: one rule fans out two ways and never splits 3 ways. The trunk used to run to the end
+    of the longest chain, leaving no lines to draw along it."""
+    trunk, lines, spec = trunk_and_lines(small_dot([("calc", "combine"), ("combine", "plot"), ("calc", "collate")]))
+    assert trunk == ["Calc"]
+    assert lines == [["Collate"], ["Combine", "Plot"]]
+    assert spec["trunk"]["lines"]                      # something is drawn along the trunk
+    slitherflow.render(spec)
+
+
+def test_pipeline_that_never_splits_keeps_one_line():
+    trunk, lines, spec = trunk_and_lines(small_dot([("a", "b"), ("b", "c")]))
+    assert trunk == ["A"] and lines == [["B", "C"]]
+    assert spec["trunk"]["lines"]

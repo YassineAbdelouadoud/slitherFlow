@@ -95,6 +95,11 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         nxt = path[k + 1] if k + 1 < len(path) else None
         if nxt is None or len(S[i]) >= 3 or len(P[nxt]) != 1:
             break
+    # If the trunk reached the end of the pipeline (nothing left to leave its last station), there would be no
+    # lines to draw along it: cut it back to the last rule that splits, or to the first rule if none does.
+    if len(trunk) > 1 and not [j for j in S[trunk[-1]] if j not in trunk]:
+        splits = [k for k, i in enumerate(trunk[:-1]) if len(S[i]) >= 2]
+        trunk = trunk[:splits[-1] + 1] if splits else trunk[:1]
     assigned = {i: ("trunk", None) for i in trunk}
 
     def chain(start):
