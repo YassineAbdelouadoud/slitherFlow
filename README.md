@@ -10,7 +10,8 @@ slitherFlow turns a Snakemake pipeline into a subway-map figure, in the style of
 
 ![miRNA-seq pipeline map](examples/mirnaseq/mirnaseq.png)
 
-*The GDSC miRNA-seq pipeline, drawn with slitherFlow. The first draft came from `--scan`, so every optional step is on the map.*
+*The [GDSC miRNA-seq pipeline](https://github.com/Dartmouth-Data-Analytics-Core/GDSC-miRNAseq-analysis-pipeline), drawn with slitherFlow.*
+
 
 ## Documentation
 
@@ -72,7 +73,7 @@ See [Development](https://mikemartinez99.github.io/slitherFlow/development/) for
 
 ## A note on AI
 
-AI tools were used to help structure and write the code in this repository. All of its outputs, including every map shown here, were checked by a person before being committed.
+AI tools were used to help structure and write the code in this repository. All of its outputs, including every map shown here, were checked by Mike Martinez before being committed.
 
 ## License
 
