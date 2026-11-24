@@ -25,8 +25,9 @@ def test_example_has_no_overlaps(spec_path):
 
 
 def readme_spec():
-    """The full spec example in the README, so the documentation can't drift from what the tool accepts."""
-    text = (EXAMPLES.parent / "README.md").read_text()
+    """The full spec example in the docs' spec reference, so the documentation can't drift from what the tool
+    accepts."""
+    text = (EXAMPLES.parent / "docs" / "reference" / "spec.md").read_text()
     blocks = text.split("```yaml\n")[1:]
     block = next(b.split("```")[0] for b in blocks if b.startswith('title: "My pipeline"'))
     return yaml.safe_load(block)

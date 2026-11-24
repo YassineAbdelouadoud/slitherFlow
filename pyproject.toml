@@ -14,6 +14,11 @@ dependencies = ["pyyaml>=5"]
 
 [project.optional-dependencies]
 test = ["pytest>=7"]
+docs = ["mkdocs-material>=9.5"]
+
+[project.urls]
+Documentation = "https://mikemartinez99.github.io/slitherFlow/"
+Source = "https://github.com/mikemartinez99/slitherFlow"
 
 [project.scripts]
 slitherflow = "slitherflow.cli:main"

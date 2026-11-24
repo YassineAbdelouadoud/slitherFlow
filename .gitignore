@@ -2,3 +2,8 @@
 *.egg-info/
 .pytest_cache/
 __pycache__/
+build/
+.DS_Store
+
+# MkDocs build output
+site/

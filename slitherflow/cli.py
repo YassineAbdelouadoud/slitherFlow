@@ -83,7 +83,7 @@ def main(argv=None):
         source.add_argument("--rulegraph", metavar="DOT", help="use a saved `snakemake --rulegraph` file instead of running it")
         source.add_argument("--scan", action="store_true",
                             help="read every Snakefile and .smk file under PROJECT instead of running Snakemake: "
-                                 "shows every rule, whatever the config (best effort; see the README)")
+                                 "shows every rule, whatever the config (best effort; see the docs)")
         p.add_argument("--save-rulegraph", metavar="DOT", help="also save the rule graph that was used (DOT format)")
 
     p = sub.add_parser("auto", help="rule graph -> starter spec -> map, in one step")

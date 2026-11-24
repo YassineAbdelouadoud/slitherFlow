@@ -1,0 +1,73 @@
+site_name: slitherFlow
+site_description: Subway maps for Snakemake pipelines
+site_url: https://mikemartinez99.github.io/slitherFlow/
+repo_url: https://github.com/mikemartinez99/slitherFlow
+repo_name: mikemartinez99/slitherFlow
+edit_uri: edit/main/docs/
+copyright: MIT License
+
+theme:
+  name: material
+  logo: logo/slitherflow_hex.png
+  favicon: logo/slitherflow_hex.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.instant
+    - content.code.copy
+    - content.action.edit
+    - search.highlight
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+
+# The examples/ and logo/ folders are symlinked into docs/ so the site uses the same images the tests check.
+exclude_docs: |
+  examples/**/*.dot
+  examples/**/*.pdf
+  examples/**/*.svg
+  logo/*.py
+
+nav:
+  - Home: index.md
+  - Get started:
+      - Installation: installation.md
+      - Quick start: quickstart.md
+  - Guide:
+      - Customizing your map: guide/customizing.md
+      - Layout tips: guide/layout.md
+      - How the first draft is built: guide/how-it-works.md
+  - Reference:
+      - Commands: reference/cli.md
+      - Spec reference: reference/spec.md
+  - Examples: examples.md
+  - Development: development.md

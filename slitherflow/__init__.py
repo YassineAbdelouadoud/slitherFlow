@@ -1,8 +1,11 @@
 """slitherFlow: subway maps for Snakemake pipelines."""
 
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 
-__version__ = version("slitherflow")
+try:
+    __version__ = version("slitherflow")
+except PackageNotFoundError:   # running from a source tree that isn't installed
+    __version__ = "unknown"
 
 from .canvas import trim_path                                  # noqa: E402,F401
 from .cli import main                                          # noqa: E402,F401

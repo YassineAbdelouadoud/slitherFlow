@@ -42,7 +42,7 @@ def test_draft_renders_without_overlaps(rulegraph):
 
 def test_drafts_match_committed_examples():
     """The example drafts are exactly what `draft` writes today. If a drafter change is intended, rebuild them
-    with the commands in the README's Examples section and commit the new files."""
+    with the commands in docs/examples.md and commit the new files."""
     for name, project in [("cutrun", "GDSC-CUT-RUN-pipeline"), ("mirnaseq", "GDSC-miRNAseq-analysis-pipeline")]:
         dot = (EXAMPLES / name / "rulegraph.dot").read_text()
         committed = (EXAMPLES / name / f"{name}_draft.yaml").read_text()
