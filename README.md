@@ -12,18 +12,49 @@ slitherFlow turns a Snakemake pipeline into a subway-map figure, in the style of
 
 ## Installation
 
+Install slitherFlow with [pixi](https://pixi.sh) (a package manager for conda environments). You don't need to clone this repository:
+
 ```shell
-git clone https://github.com/mikemartinez99/slitherFlow.git
-cd slitherFlow
-pip install .
+pixi global install -c conda-forge -c bioconda --git https://github.com/mikemartinez99/slitherFlow.git --expose slitherflow
 ```
 
-This installs the `slitherflow` command. If you'd rather not install anything, run `python3 -m slitherflow` from the `slitherFlow` folder instead. The only Python dependency is PyYAML.
+Pixi builds slitherFlow and installs it into its own environment, together with Python, PyYAML, Snakemake and rsvg-convert. Only the `slitherflow` command goes on your `PATH`, so you can run it from any folder. You don't need to install anything else.
+
+slitherFlow uses the Snakemake that pixi installed. If your pipeline needs a specific Snakemake version or plugins, pass your own with `--snakemake PATH`.
+
+### Without pixi
+
+```shell
+pip install git+https://github.com/mikemartinez99/slitherFlow.git
+```
+
+This installs the `slitherflow` command. The only Python dependency is PyYAML.
 
 You'll also want:
 
 - **Snakemake** on your `PATH`, so slitherFlow can read your pipeline's rule graph. You don't need it if you use `--scan` or already have a saved rule graph (see below).
 - **rsvg-convert** for PNG and PDF output. On a Mac, run `brew install librsvg`. On Debian or Ubuntu, run `apt install librsvg2-bin`. SVG output works without it.
+
+### Install from a clone, for development
+
+To change the code or run the tests, clone the repository and let pixi set up its environment:
+
+```shell
+git clone https://github.com/mikemartinez99/slitherFlow.git
+cd slitherFlow
+pixi install
+```
+
+Pixi installs slitherFlow and its dependencies into a `.pixi` folder inside `slitherFlow`. Your changes to the code take effect without reinstalling.
+
+Run slitherFlow with the `slitherflow` task. Pixi runs it in the folder you call it from, so relative paths work as usual. From any other folder, point pixi at the `slitherFlow` folder with `--manifest-path`:
+
+```shell
+cd /path/to/my-pipeline
+pixi run --manifest-path /path/to/slitherFlow slitherflow auto . --png
+```
+
+The rest of this page writes commands as `slitherflow ...`. In a clone, put `pixi run` in front of them, or run `pixi shell` once to put `slitherflow` on your `PATH`. To run the tests, see [Running the tests](#running-the-tests).
 
 ## Quick start
 
@@ -59,11 +90,14 @@ A scanned map shows every path the pipeline can take, so it's usually busier tha
 
 ### Try it on the bundled example
 
-The repo includes a saved rule graph from the GDSC miRNA-seq pipeline, so you can try slitherFlow without Snakemake or the pipeline itself. From the `slitherFlow` folder:
+The repo includes a saved rule graph from the GDSC miRNA-seq pipeline, so you can try slitherFlow without Snakemake or the pipeline itself. Download it and draw the map:
 
 ```shell
-slitherflow auto GDSC-miRNAseq-analysis-pipeline --rulegraph examples/mirnaseq/rulegraph.dot --png
+curl -LO https://raw.githubusercontent.com/mikemartinez99/slitherFlow/main/examples/mirnaseq/rulegraph.dot
+slitherflow auto GDSC-miRNAseq-analysis-pipeline --rulegraph rulegraph.dot --png
 ```
+
+In a clone, skip the download and pass `--rulegraph examples/mirnaseq/rulegraph.dot` from the `slitherFlow` folder.
 
 The result looks like this:
 
@@ -325,11 +359,10 @@ When you use `--rulegraph`, the project name is only used for the map's title.
 ## Running the tests
 
 ```shell
-pip install ".[test]"
-pytest
+pixi run -e test-py314 test
 ```
 
-The tests don't need Snakemake or rsvg-convert. They check that:
+Use `test-py39` to test on the oldest supported Python version. Without pixi, run `pip install ".[test]"` and then `pytest`. The tests don't need Snakemake or rsvg-convert. They check that:
 
 - the example maps still render exactly as committed;
 - every rule in each saved rule graph gets a station, and no connection is dropped;

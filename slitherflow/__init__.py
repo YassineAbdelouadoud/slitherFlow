@@ -1,6 +1,8 @@
 """slitherFlow: subway maps for Snakemake pipelines."""
 
-__version__ = "1.0.0"
+from importlib.metadata import version
+
+__version__ = version("slitherflow")
 
 from .canvas import trim_path                                  # noqa: E402,F401
 from .cli import main                                          # noqa: E402,F401
