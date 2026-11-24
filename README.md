@@ -3,15 +3,28 @@
 **Subway maps for Snakemake pipelines.**
 
 ![Version 1.0](https://img.shields.io/badge/version-1.0-009E73)
+[![Pixi](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
 [![tests](https://github.com/mikemartinez99/slitherFlow/actions/workflows/tests.yml/badge.svg)](https://github.com/mikemartinez99/slitherFlow/actions/workflows/tests.yml)
 [![docs](https://img.shields.io/badge/docs-online-0072B2)](https://mikemartinez99.github.io/slitherFlow/)
+[![License: MIT](https://img.shields.io/github/license/mikemartinez99/slitherFlow)](LICENSE)
 
 slitherFlow turns a Snakemake pipeline into a subway-map figure, in the style of the nf-core pipeline diagrams. It reads your pipeline's rule graph, writes a first draft of the map as a YAML file, and draws it as an SVG (plus PNG or PDF if you want them). You then edit the YAML until the map is to your liking.
 
-![miRNA-seq pipeline map](examples/mirnaseq/mirnaseq.png)
-
-*The [GDSC miRNA-seq pipeline](https://github.com/Dartmouth-Data-Analytics-Core/GDSC-miRNAseq-analysis-pipeline), drawn with slitherFlow.*
-
+<table>
+  <tr>
+    <td width="65%" valign="middle">
+      <a href="examples/mirnaseq/mirnaseq.png"><img src="examples/mirnaseq/mirnaseq.png" alt="Subway map of the GDSC miRNA-seq pipeline: isomiR, alignment, QC, UMI and spike-in lines run from the input FASTQ to a MultiQC report"/></a>
+      <p align="center"><sub><i>The <a href="https://github.com/Dartmouth-Data-Analytics-Core/GDSC-miRNAseq-analysis-pipeline">GDSC miRNA-seq pipeline</a>, drawn with slitherFlow. Click to enlarge.</i></sub></p>
+    </td>
+    <td valign="middle">
+      <h3>What slitherFlow does</h3>
+      <p><b>Drafts the map for you</b><br/>from your pipeline's rule graph, with no setup.</p>
+      <p><b>Shows every optional step</b><br/>with <code>--scan</code> or whatever your pipeline config passes</p>
+      <p><b>Keeps maps as plain YAML</b><br/>so the map is fully flexible and customizable</p>
+      <p><b>Writes SVG, PNG, and PDF</b><br/>with fully editable vector text</p>
+    </td>
+  </tr>
+</table>
 
 ## Documentation
 
@@ -70,6 +83,20 @@ pixi run -e test-py314 test
 ```
 
 See [Development](https://mikemartinez99.github.io/slitherFlow/development/) for how the code is organized, how to test without pixi, and how to build the docs.
+
+## Citing slitherFlow
+
+If you use slitherFlow in your work, please cite it:
+
+> Martinez, M. (2026). *slitherFlow: subway maps for Snakemake pipelines* (Version 1.0.0) [Computer software]. https://github.com/mikemartinez99/slitherFlow
+
+## Acknowledgements
+
+slitherFlow was inspired by [nf-metro](https://github.com/pinin4fjords/nf-metro), which draws metro-map diagrams for Nextflow and nf-core pipelines. slitherFlow brings the same kind of figure to Snakemake.
+
+## Thank you to our contributors
+
+- [Bryn Pickering](https://github.com/brynpickering), for pixi packaging and cross-platform CI ([#2](https://github.com/mikemartinez99/slitherFlow/pull/2))
 
 ## A note on AI
 

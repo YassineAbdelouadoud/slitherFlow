@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use slitherFlow, please cite it as below."
+type: software
+title: "slitherFlow: subway maps for Snakemake pipelines"
+abstract: >-
+  slitherFlow turns a Snakemake pipeline into a subway-map figure. It reads the
+  pipeline's rule graph, writes a first draft of the map as an editable YAML
+  file, and draws it as SVG, PNG or PDF.
+authors:
+  - family-names: Martinez
+    given-names: Mike
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/mikemartinez99/slitherFlow"
+url: "https://mikemartinez99.github.io/slitherFlow/"
+keywords:
+  - Snakemake
+  - bioinformatics
+  - workflow
+  - pipeline diagram
+  - subway map
+  - visualization

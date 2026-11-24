@@ -54,4 +54,4 @@ The code lives in the `slitherflow/` package, one file per job:
 
 ## A note on AI
 
-AI tools were used to help structure and write the code in this repository. All of its outputs, including every map shown here, were checked by a person before being committed.
+AI tools were used to help structure and write the code in this repository. All of its outputs, including every map shown here, were checked by Mike Martinez before being committed.
