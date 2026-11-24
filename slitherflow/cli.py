@@ -27,15 +27,15 @@ from .scan import rulegraph_from_files
 
 def write_draft(dot_text, project_name, out):
     spec_text = spec_from_rulegraph(dot_text, title=project_name)
-    Path(out).write_text(spec_text)
+    Path(out).write_text(spec_text, encoding="utf-8")
     print(f"wrote {out}")
 
 
 def render_file(spec_path, out, png=False, pdf=False, strict=False):
-    spec = yaml.safe_load(Path(spec_path).read_text())
+    spec = yaml.safe_load(Path(spec_path).read_text(encoding="utf-8"))
     svg, cv = render(spec)
     out = Path(out) if out else Path(spec_path).with_suffix(".svg")
-    out.write_text(svg)
+    out.write_text(svg, encoding="utf-8")
     print(f"wrote {out}")
     for flag, args, suffix in [(png, ["-z", "3"], ".png"), (pdf, ["-f", "pdf"], ".pdf")]:
         if not flag:
@@ -108,7 +108,7 @@ def main(argv=None):
 
     name = Path(a.project).resolve().name
     if a.rulegraph:
-        dot = Path(a.rulegraph).read_text()
+        dot = Path(a.rulegraph).read_text(encoding="utf-8")
     elif a.scan:
         if extra:
             sys.exit("--scan doesn't run Snakemake, so it can't take Snakemake arguments after `--`")
@@ -116,7 +116,7 @@ def main(argv=None):
     else:
         dot = rulegraph_from_project(a.project, a.snakemake, extra)
     if a.save_rulegraph:
-        Path(a.save_rulegraph).write_text(dot)
+        Path(a.save_rulegraph).write_text(dot, encoding="utf-8")
         print(f"wrote {a.save_rulegraph}")
     if a.cmd == "draft":
         write_draft(dot, name, a.output or f"{name}_subway.yaml")

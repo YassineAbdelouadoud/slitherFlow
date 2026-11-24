@@ -92,8 +92,8 @@ def test_patterns_match_the_same_file(a, b, same):
 def test_cli_scan_and_save_rulegraph(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     slitherflow.main(["auto", str(PROJECT), "--scan", "--save-rulegraph", "graph.dot"])
-    assert (tmp_path / "scan_project_subway.svg").read_text().startswith("<svg")
-    assert "dedup" in (tmp_path / "graph.dot").read_text()
+    assert (tmp_path / "scan_project_subway.svg").read_text(encoding="utf-8").startswith("<svg")
+    assert "dedup" in (tmp_path / "graph.dot").read_text(encoding="utf-8")
 
 
 def test_cli_scan_refuses_snakemake_arguments(tmp_path, monkeypatch):

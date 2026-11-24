@@ -14,20 +14,20 @@ def test_example_matches_committed_svg(spec_path):
     """Rendering each example spec reproduces its committed SVG byte for byte. If a rendering change is
     intended, re-render the examples (`slitherflow render examples/<name>/<name>.yaml --png --pdf`), look at
     the new images, and commit them."""
-    svg, _ = slitherflow.render(yaml.safe_load(spec_path.read_text()))
-    assert svg == spec_path.with_suffix(".svg").read_text(), f"{spec_path.name} no longer renders the same"
+    svg, _ = slitherflow.render(yaml.safe_load(spec_path.read_text(encoding="utf-8")))
+    assert svg == spec_path.with_suffix(".svg").read_text(encoding="utf-8"), f"{spec_path.name} no longer renders the same"
 
 
 @pytest.mark.parametrize("spec_path", SPECS, ids=[p.stem for p in SPECS])
 def test_example_has_no_overlaps(spec_path):
-    _, cv = slitherflow.render(yaml.safe_load(spec_path.read_text()))
+    _, cv = slitherflow.render(yaml.safe_load(spec_path.read_text(encoding="utf-8")))
     assert slitherflow.check_overlaps(cv) == []
 
 
 def readme_spec():
     """The full spec example in the docs' spec reference, so the documentation can't drift from what the tool
     accepts."""
-    text = (EXAMPLES.parent / "docs" / "reference" / "spec.md").read_text()
+    text = (EXAMPLES.parent / "docs" / "reference" / "spec.md").read_text(encoding="utf-8")
     blocks = text.split("```yaml\n")[1:]
     block = next(b.split("```")[0] for b in blocks if b.startswith('title: "My pipeline"'))
     return yaml.safe_load(block)

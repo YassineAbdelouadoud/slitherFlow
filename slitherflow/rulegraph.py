@@ -15,7 +15,7 @@ def rulegraph_from_project(project, snakemake="snakemake", extra=()):
         sys.exit(f"project directory not found: {project}")
     cmd = [exe, "--rulegraph", "--nolock", *extra]
     print(f"running: {' '.join(cmd)}  (in {project})", file=sys.stderr)
-    res = subprocess.run(cmd, cwd=project, capture_output=True, text=True)
+    res = subprocess.run(cmd, cwd=project, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if res.returncode != 0 or "digraph" not in res.stdout:
         tail = "\n".join((res.stderr or res.stdout).strip().splitlines()[-15:])
         sys.exit(f"`snakemake --rulegraph` failed in {project} (exit {res.returncode}):\n{tail}\n\n"

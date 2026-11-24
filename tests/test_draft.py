@@ -44,14 +44,14 @@ def test_drafts_match_committed_examples():
     """The example drafts are exactly what `draft` writes today. If a drafter change is intended, rebuild them
     with the commands in docs/examples.md and commit the new files."""
     for name, project in [("cutrun", "GDSC-CUT-RUN-pipeline"), ("mirnaseq", "GDSC-miRNAseq-analysis-pipeline")]:
-        dot = (EXAMPLES / name / "rulegraph.dot").read_text()
-        committed = (EXAMPLES / name / f"{name}_draft.yaml").read_text()
+        dot = (EXAMPLES / name / "rulegraph.dot").read_text(encoding="utf-8")
+        committed = (EXAMPLES / name / f"{name}_draft.yaml").read_text(encoding="utf-8")
         assert slitherflow.spec_from_rulegraph(dot, title=project) == committed, f"{name}_draft.yaml is out of date"
 
 
 def test_side_line_sits_on_the_side_it_feeds():
     """CUT&RUN: the spike-in line feeds 'Generate signal tracks', which is below the trunk, so it runs below."""
-    dot = (EXAMPLES / "cutrun" / "rulegraph.dot").read_text()
+    dot = (EXAMPLES / "cutrun" / "rulegraph.dot").read_text(encoding="utf-8")
     spec = yaml.safe_load(slitherflow.spec_from_rulegraph(dot))
     spike = next(ln for ln in spec["lines"].values()
                  if any(st["name"] == "Spikein alignment" for st in ln["stations"]))
@@ -62,7 +62,7 @@ def test_branches_from_one_station_share_a_side():
     """DAC RNA-seq with every option on: RSEM and featureCounts both leave 'Alignment', on the same side as the
     pre-alignment line that joins it, so the station's label keeps one side free."""
     from conftest import DATA
-    spec = yaml.safe_load(slitherflow.spec_from_rulegraph((DATA / "dac_rnaseq_all_options.dot").read_text()))
+    spec = yaml.safe_load(slitherflow.spec_from_rulegraph((DATA / "dac_rnaseq_all_options.dot").read_text(encoding="utf-8")))
     lines = spec["lines"]
     leaving = [ln for ln in lines.values() if isinstance(ln.get("from"), dict)
                and ln["from"]["station"] == "Alignment"]
@@ -74,7 +74,7 @@ def test_branches_from_one_station_share_a_side():
 
 def test_warnings_around_the_graph_are_ignored():
     """Snakemake can print warnings before the graph; only node and edge lines matter."""
-    dot = (EXAMPLES / "mirnaseq" / "rulegraph.dot").read_text()
+    dot = (EXAMPLES / "mirnaseq" / "rulegraph.dot").read_text(encoding="utf-8")
     noisy = "Building DAG of jobs...\nImportError: something unrelated\n" + dot + "\nDone.\n"
     assert slitherflow.spec_from_rulegraph(noisy) == slitherflow.spec_from_rulegraph(dot)
 

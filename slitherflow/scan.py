@@ -60,7 +60,7 @@ def snakemake_files(project):
         if path in ordered or path not in found:
             return
         ordered.append(path)
-        for line in path.read_text(errors="replace").splitlines():
+        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
             m = INCLUDE_RE.match(line)
             if m:
                 visit((path.parent / m.group(2)).resolve())
@@ -98,7 +98,7 @@ class Project:
         self.variables = {}      # name -> [ast expressions assigned to it, anywhere]
         self.functions = {}      # name -> [ast.FunctionDef] (a helper may be defined in more than one file)
         for path in files:
-            self.read(path.read_text(errors="replace").splitlines())
+            self.read(path.read_text(encoding="utf-8", errors="replace").splitlines())
         self.memo = {}
 
     def read(self, lines):

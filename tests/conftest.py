@@ -63,7 +63,7 @@ def drawn_connections(spec):
 @pytest.fixture(params=sorted(RULEGRAPHS), ids=sorted(RULEGRAPHS))
 def rulegraph(request):
     path, terminus = RULEGRAPHS[request.param]
-    dot = path.read_text()
+    dot = path.read_text(encoding="utf-8")
     spec_text = slitherflow.spec_from_rulegraph(dot, title=request.param)
     return {"name": request.param, "dot": dot, "terminus": terminus,
             "spec_text": spec_text, "spec": yaml.safe_load(spec_text)}
