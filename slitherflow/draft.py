@@ -171,6 +171,23 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         par = assigned[p][0]
         frm = pretty(rules[p]) if par == "trunk" else {"line": par, "station": pretty(rules[p])}
         lines[lid] = {"name": pretty(rules[c[0]]), "from": frm, "_chain": c, "_start": depth[p], "_origin": p}
+    # Only a line whose last rule feeds the terminus is drawn into it. If none does (every terminus input sits
+    # partway along a line that carries on), the terminus would be drawn with nothing going in: cut the line with
+    # the most terminus inputs after its last one, and the rest of it becomes a branch leaving that station.
+    if term and not any(ln["_chain"][-1] in feeds_term for ln in lines.values()):
+        fed = [(sum(i in feeds_term for i in ln["_chain"]), lid) for lid, ln in lines.items()]
+        n, cut_lid = max(fed, key=lambda f: f[0], default=(0, None))
+        if n:
+            ln = lines[cut_lid]
+            k = max(k for k, i in enumerate(ln["_chain"]) if i in feeds_term)
+            stop, rest = ln["_chain"][k], ln["_chain"][k + 1:]
+            ln["_chain"] = ln["_chain"][:k + 1]
+            lid = f"branch{len(lines) + 1}"
+            for i in rest:
+                assigned[i] = (lid, None)
+            par = assigned[stop][0]
+            lines[lid] = {"name": pretty(rules[rest[0]]), "from": {"line": par, "station": pretty(rules[stop])},
+                          "_chain": rest, "_start": depth[stop], "_origin": stop}
     end_depth = max(depth.values(), default=0) + 1
     for lid, ln in lines.items():
         ln["to"] = to = tail_target(ln["_chain"], lid)

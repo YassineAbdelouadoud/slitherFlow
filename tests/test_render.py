@@ -59,3 +59,12 @@ def test_overlap_check_reports_a_real_overlap():
     spec["lines"]["fragments"]["from"]["station"] = "Fingerprints"
     _, cv = slitherflow.render(spec)
     assert any("Fingerprints" in p for p in slitherflow.check_overlaps(cv))
+
+
+def test_terminus_with_nothing_going_in_is_reported():
+    """A terminus that no line reaches would sit on the map on its own; the check says so (and --strict fails)."""
+    spec = {"trunk": {"stations": [{"name": "A"}]},
+            "lines": {"main": {"row": 0, "to": "none", "stations": [{"name": "B"}]}},
+            "terminus": {"name": "Report"}}
+    _, cv = slitherflow.render(spec)
+    assert any(p.startswith("station 'Report' has no lines going into it") for p in slitherflow.check_overlaps(cv))

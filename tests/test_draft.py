@@ -166,3 +166,20 @@ def test_draft_does_not_assume_bioinformatics():
     assert yaml.safe_load(text)["input"]["file"] == "IN"
     assert "FASTQ" not in text.replace('e.g. "FASTQ"', "")
     assert "sample" not in text.lower()
+
+
+def test_terminus_always_has_a_line_going_in():
+    """Issue: `report` is fed by fetch, build and export, but export also feeds a later rule, so the line ran on
+    past it and no line ended at the terminus: it was drawn with nothing going in. The line is now cut after
+    its last terminus input, and the rest leaves that station as a branch."""
+    dot = small_dot([("fetch", "build"), ("build", "export"), ("export", "extra"),
+                     ("fetch", "report"), ("build", "report"), ("export", "report"), ("report", "all"),
+                     ("extra", "all")])
+    trunk, lines, spec = trunk_and_lines(dot)
+    assert spec["terminus"]["name"] == "Report"
+    into = [ln for ln in spec["lines"].values() if ln["to"] == "terminus"]
+    assert [[st["name"] for st in ln["stations"]] for ln in into] == [["Build", "Export"]]
+    extra = next(ln for ln in spec["lines"].values() if ln["stations"][0]["name"] == "Extra")
+    assert extra["from"]["station"] == "Export"
+    _, cv = slitherflow.render(spec)
+    assert slitherflow.check_overlaps(cv) == []
