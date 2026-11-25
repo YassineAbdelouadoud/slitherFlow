@@ -195,3 +195,54 @@ def test_expand_keeps_unknown_keywords_and_escapes_as_wildcards(tmp_path):
         'rule align_c:\n    output: "aligned/{sample}.c.bam"\n    shell: "x"\n', encoding="utf-8")
     _, edges = scanned_edges(tmp_path)
     assert edges == {("count_genes", "all"), ("merge", "all"), ("align_a", "merge"), ("align_b", "merge")}
+
+
+BACKEND = DATA / "backend_project"
+# `snakemake --rulegraph` for backend_project's config (backends: ["default"]): validate and fast_correction
+# are defined, but only used for the "reference" and "fast" backends
+BACKEND_RUN = 'digraph snakemake_dag {\n\t0[label = "all"];\n\t1[label = "summarize"];\n\t2[label = "simulate"];\n' \
+              '\t1 -> 0\n\t2 -> 1\n}\n'
+
+
+def test_append_inside_an_input_function_is_followed():
+    """backend_project's summary_inputs() adds fast_correction's output with inputs.append(...)."""
+    _, edges = scanned_edges(BACKEND)
+    assert ("fast_correction", "summarize") in edges and ("validate", "all") in edges
+
+
+def test_scan_alone_cannot_tell_these_rules_are_optional():
+    """Both rules are defined outside any `if`: reading the files can't see that they only run for some backends."""
+    assert optional_rules(rulegraph_from_files(BACKEND)) == set()
+
+
+def test_compare_marks_rules_the_config_does_not_run():
+    from slitherflow.scan import mark_not_run
+    dot, marked = mark_not_run(rulegraph_from_files(BACKEND), BACKEND_RUN)
+    assert sorted(marked) == ["fast_correction", "validate"]
+    assert optional_rules(dot) == {"fast_correction", "validate"}
+    again, marked_again = mark_not_run(dot, BACKEND_RUN)          # already marked: left as they are
+    assert again == dot and marked_again == []
+
+
+def test_cli_scan_compare(tmp_path, monkeypatch):
+    """`draft --scan --compare` runs Snakemake (here: a recorded rule graph) with the arguments after `--`, and
+    dashes the rules it leaves out."""
+    import slitherflow.cli as cli
+    calls = []
+    monkeypatch.setattr(cli, "rulegraph_from_project", lambda project, exe, extra: calls.append(extra) or BACKEND_RUN)
+    monkeypatch.chdir(tmp_path)
+    slitherflow.main(["draft", str(BACKEND), "--scan", "--compare", "-o", "spec.yaml", "--", "--configfile", "x.yaml"])
+    assert calls == [["--configfile", "x.yaml"]]
+    spec = yaml.safe_load((tmp_path / "spec.yaml").read_text(encoding="utf-8"))
+    optional = set()
+    for ln in spec["lines"].values():
+        for st in ln["stations"]:
+            if ln.get("optional") or st.get("optional"):
+                optional.add(st["name"])
+    assert optional == {"Fast correction", "Validate"}
+
+
+def test_cli_compare_needs_scan(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(SystemExit, match="--compare only works with --scan"):
+        slitherflow.main(["draft", str(BACKEND), "--compare"])

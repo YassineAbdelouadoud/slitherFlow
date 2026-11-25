@@ -317,7 +317,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         out.append(f"    row: {ln['row']}" + ("            # negative = above the trunk" if ln['row'] < 0 else ""))
         parent_optional = branch and lines[ln["from"]["line"]]["optional"]
         if ln["optional"] and not parent_optional:
-            out.append("    optional: true         # dashed: these rules only exist under an `if` in the Snakefiles")
+            out.append("    optional: true         # dashed: these steps only run for some configs")
         elif not ln["optional"] and parent_optional:
             out.append("    optional: false        # its parent line is optional, but these steps always run")
         elif not ln["optional"] and "from" in ln and not branch:
