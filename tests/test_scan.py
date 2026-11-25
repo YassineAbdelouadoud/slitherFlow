@@ -100,3 +100,61 @@ def test_cli_scan_refuses_snakemake_arguments(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     with pytest.raises(SystemExit, match="can't take Snakemake arguments"):
         slitherflow.main(["draft", str(PROJECT), "--scan", "--", "--configfile", "x.yaml"])
+
+
+ENERGY = DATA / "energy_project"
+
+
+def optional_rules(dot):
+    return set(re.findall(r'label = "([^"]+)", optional = true', dot))
+
+
+def test_only_rules_under_an_if_are_marked_optional():
+    """scan_project: rules/dedup.smk is only included under `if USE_DEDUP:`; every other rule always exists."""
+    assert optional_rules(rulegraph_from_files(PROJECT)) == {"dedup"}
+
+
+def test_energy_model_marks_conditional_rules_not_independent_sources():
+    """The shape from the issue: four weather / hydrology downloads that don't depend on `download_data` run
+    every time, so they stay solid. The heat-demand rule (inside an `if`) and the validation file (included
+    under an `if`) are the optional ones. Their targets are added with TARGETS.append(...)."""
+    dot = rulegraph_from_files(ENERGY)
+    assert optional_rules(dot) == {"build_heat_demand", "validate_results"}
+    spec = yaml.safe_load(slitherflow.spec_from_rulegraph(dot))
+    lines = spec["lines"]
+    downloads = [ln for ln in lines.values() if ln.get("from") == "input"]
+    assert len(downloads) == 4 and not any(ln.get("optional") for ln in downloads)
+    station = {st["name"]: (lid, st) for lid, ln in lines.items() for st in ln["stations"]}
+    heat_line, heat = station["Build heat demand"]
+    assert heat.get("optional") or lines[heat_line].get("optional")
+    val_line, val = station["Validate results"]
+    assert val.get("optional") or lines[val_line].get("optional")
+    others = [n for n in station if n not in {"Build heat demand", "Validate results"}]
+    assert not any(station[n][1].get("optional") or lines[station[n][0]].get("optional") for n in others)
+
+
+def test_rule_defined_on_both_sides_of_an_if_is_not_optional(tmp_path):
+    (tmp_path / "Snakefile").write_text(
+        'rule all:\n    input: "out/a.txt", "out/b.txt", "out/c.txt"\n\n'
+        'if config["aligner"] == "fast":\n'
+        '    rule align:\n        output: "out/a.txt"\n        shell: "fast"\n'
+        'elif config["aligner"] == "slow":\n'
+        '    rule align:\n        output: "out/a.txt"\n        shell: "slow"\n'
+        'else:\n'
+        '    rule align:\n        output: "out/a.txt"\n        shell: "default"\n\n'
+        'if config.get("extra"):\n'
+        '    rule extra:\n        output: "out/b.txt"\n        shell: "x"\n'
+        'else:\n'
+        '    rule plain:\n        output: "out/c.txt"\n        shell: "y"\n\n'
+        'rule always:\n    input: "out/a.txt"\n    output: "out/d.txt"\n    shell: "z"\n', encoding="utf-8")
+    assert optional_rules(rulegraph_from_files(tmp_path)) == {"extra", "plain"}
+
+
+def test_file_included_both_ways_is_not_optional(tmp_path):
+    """A file included under an `if` but also unconditionally (here from another included file) always exists."""
+    (tmp_path / "rules").mkdir()
+    (tmp_path / "Snakefile").write_text('include: "rules/common.smk"\nif config["x"]:\n    include: "rules/a.smk"\n'
+                                        'rule all:\n    input: "out/a.txt"\n', encoding="utf-8")
+    (tmp_path / "rules" / "common.smk").write_text('include: "a.smk"\n', encoding="utf-8")
+    (tmp_path / "rules" / "a.smk").write_text('rule a:\n    output: "out/a.txt"\n    shell: "a"\n', encoding="utf-8")
+    assert optional_rules(rulegraph_from_files(tmp_path)) == set()

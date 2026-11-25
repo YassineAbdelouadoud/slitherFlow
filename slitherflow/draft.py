@@ -31,11 +31,18 @@ def find_terminus(succ, pred):
 
 
 def spec_from_rulegraph(dot_text, title="My pipeline"):
-    names, edges = {}, []
+    """A starter spec (YAML text) from a rule graph in `snakemake --rulegraph` (DOT) form.
+
+    Lines and stations are marked optional only when the graph says so: `--scan` adds `optional = true` to the
+    rules it finds defined under an `if` (or in a file only included under one). A plain `snakemake --rulegraph`
+    only holds rules the current config runs, so nothing in it is marked optional."""
+    names, edges, conditional = {}, [], set()
     for line in dot_text.splitlines():
-        m = re.match(r'\s*(\d+)\s*\[\s*label\s*=\s*"([^"]+)"', line)
+        m = re.match(r'\s*(\d+)\s*\[\s*label\s*=\s*"([^"]+)"(.*)', line)
         if m:
             names[m.group(1)] = m.group(2)
+            if re.search(r'\boptional\s*=\s*"?true\b', m.group(3)):
+                conditional.add(m.group(1))
             continue
         m = re.match(r"\s*(\d+)\s*->\s*(\d+)", line)
         if m:
@@ -140,7 +147,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
             lid = f"side{len(lines) + 1}"
             for i in c:
                 assigned[i] = (lid, None)
-            lines[lid] = {"name": pretty(rules[c[0]]), "from": pretty(rules[t]), "optional": True, "_chain": c,
+            lines[lid] = {"name": pretty(rules[c[0]]), "from": pretty(rules[t]), "_chain": c,
                           "_start": depth[t], "_origin": t}
     for src in sources:
         if src in assigned:
@@ -149,7 +156,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         lid = f"side{len(lines) + 1}"
         for i in c:
             assigned[i] = (lid, None)
-        lines[lid] = {"name": pretty(rules[c[0]]), "from": "input", "optional": True, "_chain": c, "_start": -1, "_origin": None}
+        lines[lid] = {"name": pretty(rules[c[0]]), "from": "input", "_chain": c, "_start": -1, "_origin": None}
     # every rule still unplaced branches off the station of its latest placed input
     for j in order:
         if j in assigned:
@@ -252,6 +259,9 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         occupied.append((ln["row"], a, b, joins(ln)))
         sides.setdefault(src, 1 if ln["row"] > pr else -1)
     unplaced = [rules[i] for i in nodes if i not in assigned]
+    # a line is optional when every rule on it is; other optional rules become optional stations
+    for ln in lines.values():
+        ln["optional"] = all(i in conditional for i in ln["_chain"])
 
     # ---- write YAML with comments ----
     q = lambda v: '"' + str(v).replace('"', '\\"') + '"'
@@ -267,8 +277,8 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
            "  stations:"]
     ref = lambda v: q(v) if isinstance(v, str) else "{line: " + v["line"] + ", station: " + q(v["station"]) + "}"
 
-    def station(i):
-        extra = ""
+    def station(i, on_optional_line=False):
+        extra = ", optional: true" if i in conditional and not on_optional_line else ""
         if feeds.get(i):
             extra = ", feeds: [" + ", ".join(ref({"line": assigned[j][0], "station": pretty(rules[j])})
                                              for j in feeds[i]) + "]"
@@ -288,11 +298,16 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
         if "from" in ln:
             out.append(f"    from: {ref(ln['from'])}")
         out.append(f"    row: {ln['row']}" + ("            # negative = above the trunk" if ln['row'] < 0 else ""))
-        if ln.get("optional"):
-            out.append("    optional: true         # dashed; delete if the step always runs")
+        parent_optional = branch and lines[ln["from"]["line"]]["optional"]
+        if ln["optional"] and not parent_optional:
+            out.append("    optional: true         # dashed: these rules only exist under an `if` in the Snakefiles")
+        elif not ln["optional"] and parent_optional:
+            out.append("    optional: false        # its parent line is optional, but these steps always run")
+        elif not ln["optional"] and "from" in ln and not branch:
+            out.append("    # optional: true       # uncomment to draw it dashed, if these steps only run for some configs")
         out.append(f"    to: {ref(ln['to'])}")
         out.append("    stations:")
-        out += [f"      - {station(i)}" for i in ln["_chain"]]
+        out += [f"      - {station(i, ln['optional'])}" for i in ln["_chain"]]
     if term:
         feeding = [ln["row"] for ln in lines.values() if ln["to"] == "terminus" and "from" not in ln]
         trow = min(feeding, key=abs) if feeding else 0

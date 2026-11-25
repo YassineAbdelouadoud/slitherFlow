@@ -41,7 +41,7 @@ lines:
     name: "Make fastqc config"
     from: "input"
     row: 1.6
-    optional: true         # dashed; delete if the step always runs
+    # optional: true       # uncomment to draw it dashed, if these steps only run for some configs
     to: "none"
     stations:
       - {name: "Make fastqc config", tool: ""}

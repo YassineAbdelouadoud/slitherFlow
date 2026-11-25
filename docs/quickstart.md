@@ -41,7 +41,7 @@ slitherflow auto /path/to/my-pipeline --png --scan
 
 Instead of running Snakemake, this reads every `Snakefile` and `.smk` file in the project (hidden and `test`/`tests` folders are skipped). It works out which rules connect by matching each rule's inputs against other rules' outputs, the same way Snakemake does. It follows variables, `expand()`, f-strings, helper functions, input functions and `rules.X.output`, and anything that depends on the config is treated like a wildcard. Only rules that lead to `rule all` are kept, so helper rules for building references don't clutter the map.
 
-A scanned map shows every path the pipeline can take, so it's usually busier than the default one. Alternative steps (say, two aligners) appear side by side, and you'll probably want to mark the optional ones with [`optional: true`](guide/customizing.md#mark-optional-steps).
+A scanned map shows every path the pipeline can take, so it's usually busier than the default one. Rules defined inside an `if` block, or in a file that's only included inside one (`if config["dedup"]: include: "rules/dedup.smk"`), are marked [`optional: true`](guide/customizing.md#mark-optional-steps) and drawn dashed. A rule defined on both sides of an `if`/`else` exists either way, so it isn't marked. Rules that are always defined but that `rule all` only asks for under some settings can't be spotted, so mark those yourself.
 
 !!! warning "Best effort"
     Paths built from the sample sheet at run time, or rules imported with `use rule ... from`, can't always be followed. If a connection is missing, compare with `snakemake --rulegraph`, or add it yourself with [`feeds`](guide/customizing.md#connect-lines-together).

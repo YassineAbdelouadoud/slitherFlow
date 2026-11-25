@@ -51,7 +51,7 @@ lines:
     name: "Spikein alignment"
     from: "Trimming"
     row: 2.6
-    optional: true         # dashed; delete if the step always runs
+    # optional: true       # uncomment to draw it dashed, if these steps only run for some configs
     to: "terminus"
     stations:
       - {name: "Spikein alignment", tool: ""}
@@ -61,7 +61,7 @@ lines:
     name: "Count barcodes"
     from: "input"
     row: 3.1
-    optional: true         # dashed; delete if the step always runs
+    # optional: true       # uncomment to draw it dashed, if these steps only run for some configs
     to: "terminus"
     stations:
       - {name: "Count barcodes", tool: ""}

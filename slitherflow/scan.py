@@ -16,6 +16,11 @@ rule, whatever the config. The price is that file paths have to be worked out wi
 
 It is a best effort: input functions that build paths from data, Snakemake modules (`use rule ... from`) and
 paths assembled in other ways can't be followed, so a connection may be missing (or, rarely, extra).
+
+Rules that only exist for some configs are marked `optional = true` in the graph (and drawn dashed): a rule
+defined inside an `if` / `elif` / `else` block, or in a file that is only included inside one. A rule defined on
+both the `if` and the `else` side of the same test exists either way, so it is not marked. Rules that always
+exist but that `rule all` only asks for under some settings are not marked either.
 """
 import ast
 import itertools
@@ -43,6 +48,8 @@ DEF_RE = re.compile(r"^(\s*)def\s+([A-Za-z_]\w*)\s*\(")
 ASSIGN_RE = re.compile(r"^\s*([A-Za-z_]\w*)\s*(\+=|=)(?!=)\s*(.*)$")
 INCLUDE_RE = re.compile(r"""^\s*include\s*:\s*(['"])(.+?)\1""")
 DIRECTIVE_RE = re.compile(r"^(\s+)([A-Za-z_]\w*)\s*:(.*)$")
+IF_RE = re.compile(r"^(\s*)(if|elif|else)\b")
+APPEND_RE = re.compile(r"^\s*([A-Za-z_]\w*)\.(append|extend)\s*\(")
 
 
 def snakemake_files(project):
@@ -94,21 +101,44 @@ class Project:
     """Everything read from the files: rules (name -> inputs/outputs), variables and helper functions."""
 
     def __init__(self, files):
-        self.rules = {}          # name -> {"input": [ast], "output": [ast], "order": n}
+        self.rules = {}          # name -> {"input": [ast], "output": [ast], "order": n, "defs": [...]}
         self.variables = {}      # name -> [ast expressions assigned to it, anywhere]
         self.functions = {}      # name -> [ast.FunctionDef] (a helper may be defined in more than one file)
+        self.includes = []       # (including file, included file, inside an if block?)
+        self.n_tests = 0         # each if / elif / else chain gets its own number
         for path in files:
-            self.read(path.read_text(encoding="utf-8", errors="replace").splitlines())
+            self.read(path.read_text(encoding="utf-8", errors="replace").splitlines(), Path(path).resolve())
         self.memo = {}
 
-    def read(self, lines):
+    def read(self, lines, path=None):
         i = 0
+        tests = []               # the if / elif / else blocks the current line is inside: (indent, test number, kind)
         while i < len(lines):
             line = lines[i]
+            if line.strip() and not line.lstrip().startswith("#"):
+                indent = len(line) - len(line.lstrip())
+                closed = None
+                while tests and tests[-1][0] >= indent:
+                    closed = tests.pop()
+                m = IF_RE.match(line)
+                if m:
+                    kind = m.group(2)
+                    if kind != "if" and closed and closed[0] == indent:    # elif / else: same test as the if
+                        tests.append((indent, closed[1], kind))
+                    else:
+                        self.n_tests += 1
+                        tests.append((indent, self.n_tests, kind))
+                    i += 1
+                    continue
+            m = INCLUDE_RE.match(line)
+            if m and path is not None:
+                self.includes.append((path, (path.parent / m.group(2)).resolve(), bool(tests)))
             m = RULE_RE.match(line)
             if m:
                 end = block(lines, i, len(m.group(1)))
                 self.read_rule(m.group(3), lines[i:end])
+                where = (tests[-1][1], tests[-1][2]) if tests else None
+                self.rules[m.group(3)]["defs"].append((path, where))
                 i = end
                 continue
             m = DEF_RE.match(line)
@@ -121,6 +151,21 @@ class Project:
                     pass
                 i = end
                 continue
+            m = APPEND_RE.match(line)
+            if m:                                         # TARGETS.append(x) / .extend(xs): like TARGETS += [x]
+                text, j, call = line.strip(), i, None
+                while j < len(lines) and j - i < 40:
+                    try:
+                        call = ast.parse(text, mode="eval").body
+                        break
+                    except SyntaxError:
+                        j += 1
+                        if j < len(lines):
+                            text += "\n" + lines[j]
+                if isinstance(call, ast.Call):
+                    self.variables.setdefault(m.group(1), []).extend(call.args)
+                    i = j + 1
+                    continue
             m = ASSIGN_RE.match(line)
             if m:
                 text, j = m.group(3), i
@@ -140,7 +185,7 @@ class Project:
             i += 1
 
     def read_rule(self, name, lines):
-        rule = self.rules.setdefault(name, {"input": [], "output": [], "order": len(self.rules)})
+        rule = self.rules.setdefault(name, {"input": [], "output": [], "order": len(self.rules), "defs": []})
         # Snakemake connects rules through log and benchmark files too, so they count as outputs here
         body_indent = None
         i = 1
@@ -158,6 +203,34 @@ class Project:
                 i = end
                 continue
             i += 1
+
+    def conditional_rules(self):
+        """Rules that only exist for some configs: each definition sits inside an if / elif / else block, or in a
+        file that is only included inside one. A rule defined on both the if and the else side of one test (in
+        a file that is always read) exists either way, so it is left out."""
+        included = {dst for _, dst, _ in self.includes}
+        files = {p for r in self.rules.values() for p, _ in r["defs"]} | {src for src, _, _ in self.includes}
+        always = {f for f in files if f not in included} | {None}    # main Snakefiles, and files nothing includes
+        todo = list(always)
+        while todo:                                                   # ... and what they include outside an if
+            a = todo.pop()
+            for src, dst, cond in self.includes:
+                if src == a and not cond and dst not in always:
+                    always.add(dst)
+                    todo.append(dst)
+        out = set()
+        for name, rule in self.rules.items():
+            defs = [(where, path in always) for path, where in rule["defs"]]
+            if not defs or any(where is None and read for where, read in defs):
+                continue
+            sides = {}
+            for where, read in defs:
+                if where is not None and read:
+                    sides.setdefault(where[0], set()).add(where[1])
+            if any({"if", "else"} <= kinds for kinds in sides.values()):
+                continue
+            out.add(name)
+        return out
 
     # ---- what can an expression evaluate to? -------------------------------------------------------------------
     # A set of path patterns (strings; ANY marks unknown text) and rule references (("rule", name) tuples).
@@ -392,8 +465,9 @@ def rulegraph_from_files(project, min_literal=3):
                     keep.add(a)
                     todo.append(a)
     ids = {r: k for k, r in enumerate(r for r in names if r in keep)}
+    conditional = proj.conditional_rules() - {"all"}
     out = ["digraph snakemake_dag {"]
-    out += [f'\t{i}[label = "{r}"];' for r, i in ids.items()]
+    out += [f'\t{i}[label = "{r}"{", optional = true" if r in conditional else ""}];' for r, i in ids.items()]
     out += [f"\t{ids[a]} -> {ids[b]}" for a, b in sorted(edges, key=lambda e: (ids.get(e[1], 0), ids.get(e[0], 0)))
             if a in ids and b in ids]
     out.append("}")

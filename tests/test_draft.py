@@ -1,4 +1,6 @@
 """The drafter: from a saved `snakemake --rulegraph`, every rule gets a station and no connection is lost."""
+import re
+
 import yaml
 
 import slitherflow
@@ -108,3 +110,49 @@ def test_pipeline_that_never_splits_keeps_one_line():
     trunk, lines, spec = trunk_and_lines(small_dot([("a", "b"), ("b", "c")]))
     assert trunk == ["A"] and lines == [["B", "C"]]
     assert spec["trunk"]["lines"]
+
+
+def test_rulegraph_drafts_mark_nothing_optional():
+    """Issue: every side line was drawn optional. A plain `snakemake --rulegraph` only holds rules the config runs,
+    so an energy model's four independent weather / hydrology downloads (side lines from the input) stay solid,
+    with a commented-out hint instead."""
+    from conftest import DATA
+    text = slitherflow.spec_from_rulegraph((DATA / "energy_default.dot").read_text(encoding="utf-8"))
+    spec = yaml.safe_load(text)
+    from_input = [ln for ln in spec["lines"].values() if ln.get("from") == "input"]
+    assert sorted(ln["stations"][0]["name"] for ln in from_input) == [
+        "Download cerra", "Download efas discharge", "Download efas static", "Download era5"]
+    assert not any(ln.get("optional") for ln in spec["lines"].values())
+    stations = spec["trunk"]["stations"] + [st for ln in spec["lines"].values() for st in ln["stations"]]
+    assert not any(st.get("optional") for st in stations)
+    assert text.count("# optional: true") == len(from_input)
+
+
+def with_optional(dot, marked):
+    """Mark rules the way `--scan` does: `N[label = "rule", optional = true];`."""
+    return re.sub(r'(\d+)\[label = "([^"]+)"\]',
+                  lambda m: m.group(0)[:-1] + (", optional = true]" if m.group(2) in marked else "]"), dot)
+
+
+def test_optional_rules_in_the_graph_become_optional_lines_and_stations():
+    """`--scan` marks conditional rules with `optional = true`: a line whose rules are all optional is dashed, an
+    optional rule on a solid line is a dashed station, and a solid branch of a dashed line is set back to solid
+    (branches inherit their parent's dashing)."""
+    dot = small_dot([("a", "b"), ("b", "c"), ("b", "d"), ("b", "e"), ("c", "end"), ("d", "end"), ("e", "end"),
+                     ("c", "opt"), ("opt", "back"),
+                     ("x", "y"), ("y", "w"), ("w", "v"), ("v", "end"), ("y", "z")])
+    text = slitherflow.spec_from_rulegraph(with_optional(dot, {"opt", "x", "y", "w", "v"}))
+    spec = yaml.safe_load(text)
+    lines = spec["lines"]
+    line_of = {st["name"]: lid for lid, ln in lines.items() for st in ln["stations"]}
+    station = {st["name"]: st for ln in lines.values() for st in ln["stations"]}
+
+    side, branch = lines[line_of["X"]], lines[line_of["Z"]]
+    assert [st["name"] for st in side["stations"]] == ["X", "Y", "W", "V"]
+    assert side["optional"] is True and not any(st.get("optional") for st in side["stations"])
+    assert branch["from"] == {"line": line_of["X"], "station": "Y"} and branch["optional"] is False
+    assert station["Opt"]["optional"] is True and not lines[line_of["Opt"]].get("optional")
+    solid = [n for n in station if n not in {"Opt", "X", "Y", "W", "V"}]
+    assert not any(station[n].get("optional") for n in solid)
+    assert not any(st.get("optional") for st in spec["trunk"]["stations"])
+    slitherflow.render(spec)
