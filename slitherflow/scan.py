@@ -383,10 +383,14 @@ class Project:
             for kw in keywords:
                 if kw.arg in params:
                     local[kw.arg] = self.values(kw.value, env, stack) or {ANY}
-            # local variables: every value assigned to them (`x = ...`, `x += ...`, `x["key"] = ...`);
-            # twice over, so a variable built from another one picks up its values
+            # local variables: every value assigned to them (`x = ...`, `x += ...`, `x["key"] = ...`,
+            # `x.append(...)`, `x.extend(...)`); twice over, so a variable built from another one picks up its values
             assigned = {}
             for sub in ast.walk(fn):
+                if (isinstance(sub, ast.Call) and isinstance(sub.func, ast.Attribute)
+                        and sub.func.attr in ("append", "extend") and isinstance(sub.func.value, ast.Name)
+                        and sub.func.value.id not in params):
+                    assigned.setdefault(sub.func.value.id, []).extend(sub.args)
                 if isinstance(sub, (ast.Assign, ast.AugAssign)):
                     for t in (sub.targets if isinstance(sub, ast.Assign) else [sub.target]):
                         t = t.value if isinstance(t, ast.Subscript) else t
@@ -484,6 +488,24 @@ def can_match_same_file(p, q):
         return go(0, 0)
     finally:
         sys.setrecursionlimit(limit)
+
+
+def mark_not_run(scan_dot, run_dot):
+    """`--scan --compare`: mark every rule in the scanned graph that `snakemake --rulegraph` (run_dot, for the
+    current config) leaves out as `optional = true`. Returns (new DOT text, names of the rules newly marked).
+
+    This catches rules that are always defined but only asked for under some settings, which reading the files
+    can't see: `expand(...) if <setting> else []` in `rule all`, or an input function that adds a file only for
+    some settings."""
+    run = set(re.findall(r'\[\s*label\s*=\s*"([^"]+)"', run_dot))
+    marked, out = [], []
+    for line in scan_dot.splitlines():
+        m = re.match(r'(\s*\d+\s*\[\s*label\s*=\s*"([^"]+)")(.*)$', line)
+        if m and m.group(2) != "all" and m.group(2) not in run and "optional" not in m.group(3):
+            line = m.group(1) + ", optional = true" + m.group(3)
+            marked.append(m.group(2))
+        out.append(line)
+    return "\n".join(out) + "\n", marked
 
 
 def rulegraph_from_files(project, min_literal=3):

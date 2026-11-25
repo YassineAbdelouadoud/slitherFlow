@@ -59,6 +59,13 @@ def test_empty_rulegraph():
 
 
 def test_rulegraph_that_is_all_cycle():
+    """No rule is a source, so the loop is broken at the first rule: a -> b is drawn, b -> a is listed as left
+    out (before, this stopped with "no source rule")."""
     dot = '0[label = "a"];\n1[label = "b"];\n0 -> 1\n1 -> 0\n'
+    text = slitherflow.spec_from_rulegraph(dot)
+    assert "#   - b -> a" in text
+
+
+def test_rulegraph_with_no_rules_but_all():
     with pytest.raises(SystemExit, match="no source rule"):
-        slitherflow.spec_from_rulegraph(dot)
+        slitherflow.spec_from_rulegraph('0[label = "all"];\n')

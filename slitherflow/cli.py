@@ -1,13 +1,14 @@
 """slitherFlow: subway maps for Snakemake pipelines.
 
-    slitherflow auto   PROJECT_DIR [-o map.svg] [--scan | --rulegraph FILE.dot] [--png] [--pdf] [-- SNAKEMAKE ARGS]
-    slitherflow draft  PROJECT_DIR [-o spec.yaml] [--scan | --rulegraph FILE.dot] [-- SNAKEMAKE ARGS]
+    slitherflow auto   PROJECT_DIR [-o map.svg] [--scan [--compare] | --rulegraph FILE.dot] [--png] [--pdf] [-- SNAKEMAKE ARGS]
+    slitherflow draft  PROJECT_DIR [-o spec.yaml] [--scan [--compare] | --rulegraph FILE.dot] [-- SNAKEMAKE ARGS]
     slitherflow render SPEC.yaml   [-o map.svg] [--png] [--pdf] [--strict]
 
 By default `auto` and `draft` run `snakemake --rulegraph --nolock` inside PROJECT_DIR, which shows the rules your
 current config uses; anything after `--` is passed to Snakemake (e.g. `-- --configfile config/test.yaml`).
 With --scan they read every Snakefile and .smk file instead, so optional rules show up whatever the config,
-and Snakemake isn't needed. Needs Python 3 + PyYAML; --png/--pdf need rsvg-convert.
+and Snakemake isn't needed. Add --compare to also run `snakemake --rulegraph` and dash the rules your current
+config doesn't use. Needs Python 3 + PyYAML; --png/--pdf need rsvg-convert.
 """
 import argparse
 import shutil
@@ -22,7 +23,7 @@ from .draft import spec_from_rulegraph
 from .overlaps import check_overlaps
 from .render import render
 from .rulegraph import rulegraph_from_project
-from .scan import rulegraph_from_files
+from .scan import mark_not_run, rulegraph_from_files
 
 
 def write_draft(dot_text, project_name, out):
@@ -84,6 +85,9 @@ def main(argv=None):
         source.add_argument("--scan", action="store_true",
                             help="read every Snakefile and .smk file under PROJECT instead of running Snakemake: "
                                  "shows every rule, whatever the config (best effort; see the docs)")
+        p.add_argument("--compare", action="store_true",
+                       help="with --scan: also run `snakemake --rulegraph` (with any Snakemake arguments after `--`) "
+                            "and mark the rules it leaves out as optional")
         p.add_argument("--save-rulegraph", metavar="DOT", help="also save the rule graph that was used (DOT format)")
 
     p = sub.add_parser("auto", help="rule graph -> starter spec -> map, in one step")
@@ -106,13 +110,20 @@ def main(argv=None):
         render_file(a.spec, a.output, a.png, a.pdf, a.strict)
         return
 
+    if a.compare and not a.scan:
+        sys.exit("--compare only works with --scan")
     name = Path(a.project).resolve().name
     if a.rulegraph:
         dot = Path(a.rulegraph).read_text(encoding="utf-8")
     elif a.scan:
-        if extra:
-            sys.exit("--scan doesn't run Snakemake, so it can't take Snakemake arguments after `--`")
+        if extra and not a.compare:
+            sys.exit("--scan doesn't run Snakemake, so it can't take Snakemake arguments after `--` "
+                     "(add --compare to run it as well)")
         dot = rulegraph_from_files(a.project)
+        if a.compare:
+            dot, marked = mark_not_run(dot, rulegraph_from_project(a.project, a.snakemake, extra))
+            print(f"--compare: {len(marked)} rule(s) found by --scan aren't used by the current config, marked "
+                  f"optional" + (": " + ", ".join(marked) if marked else ""), file=sys.stderr)
     else:
         dot = rulegraph_from_project(a.project, a.snakemake, extra)
     if a.save_rulegraph:
