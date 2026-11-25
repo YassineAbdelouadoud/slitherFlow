@@ -68,3 +68,9 @@ def test_terminus_with_nothing_going_in_is_reported():
             "terminus": {"name": "Report"}}
     _, cv = slitherflow.render(spec)
     assert any(p.startswith("station 'Report' has no lines going into it") for p in slitherflow.check_overlaps(cv))
+
+
+def test_a_lone_trunk_station_is_not_reported():
+    """A one-rule pipeline is just a trunk station with no lines: nothing is wrong with that."""
+    _, cv = slitherflow.render({"trunk": {"stations": [{"name": "Build"}]}, "lines": {}})
+    assert slitherflow.check_overlaps(cv) == []

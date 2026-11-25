@@ -158,3 +158,40 @@ def test_file_included_both_ways_is_not_optional(tmp_path):
     (tmp_path / "rules" / "common.smk").write_text('include: "a.smk"\n', encoding="utf-8")
     (tmp_path / "rules" / "a.smk").write_text('rule a:\n    output: "out/a.txt"\n    shell: "a"\n', encoding="utf-8")
     assert optional_rules(rulegraph_from_files(tmp_path)) == set()
+
+
+def scanned_edges(project):
+    dot = rulegraph_from_files(project)
+    names = dict(re.findall(r'(\d+)\s*\[\s*label\s*=\s*"([^"]+)"', dot))
+    return set(names.values()), {(names[a], names[b]) for a, b in re.findall(r"(\d+)\s*->\s*(\d+)", dot)}
+
+
+def test_expand_fills_in_known_keyword_values(tmp_path):
+    """Issue: expand("model/{name}.parquet", name=["nodes", "edges"]) was read as model/{name}.parquet, so `all`
+    seemed to ask for every file in model/, pulling in a rule it never needs."""
+    (tmp_path / "Snakefile").write_text(
+        'rule all:\n    input:\n        expand("model/{name}.parquet", name=["nodes", "edges"]),\n\n'
+        'rule build:\n    output:\n        "model/nodes.parquet",\n        "model/edges.parquet",\n'
+        '    shell: "touch {output}"\n\n'
+        'rule attribute:\n    input:\n        "model/nodes.parquet",\n    output:\n'
+        '        "model/attribution.parquet",\n    shell: "touch {output}"\n', encoding="utf-8")
+    assert scanned_edges(tmp_path) == ({"all", "build"}, {("build", "all")})
+
+
+def test_expand_keeps_unknown_keywords_and_escapes_as_wildcards(tmp_path):
+    """sample comes from the config (unknown: stays a wildcard); kind and part are known lists, so the rules for
+    other values aren't connected; {{sample}} is Snakemake's escape for a wildcard left for the rule to fill."""
+    (tmp_path / "Snakefile").write_text(
+        'SAMPLES = config["samples"]\n'
+        'rule all:\n    input:\n'
+        '        expand("counts/{sample}.{kind}.tsv", sample=SAMPLES, kind=["genes"]),\n'
+        '        "aligned/s1.bam",\n'
+        'rule count_genes:\n    output: "counts/{sample}.genes.tsv"\n    shell: "x"\n'
+        'rule count_exons:\n    output: "counts/{sample}.exons.tsv"\n    shell: "x"\n'
+        'rule merge:\n    input: expand("aligned/{{sample}}.{part}.bam", part=["a", "b"])\n'
+        '    output: "aligned/{sample}.bam"\n    shell: "x"\n'
+        'rule align_a:\n    output: "aligned/{sample}.a.bam"\n    shell: "x"\n'
+        'rule align_b:\n    output: "aligned/{sample}.b.bam"\n    shell: "x"\n'
+        'rule align_c:\n    output: "aligned/{sample}.c.bam"\n    shell: "x"\n', encoding="utf-8")
+    _, edges = scanned_edges(tmp_path)
+    assert edges == {("count_genes", "all"), ("merge", "all"), ("align_a", "merge"), ("align_b", "merge")}

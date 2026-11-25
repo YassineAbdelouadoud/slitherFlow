@@ -353,6 +353,7 @@ def render(spec):
 
     if term:
         cv.pill(tx, ty - half, ty + half, into, w=pill_w, desc=f"station '{term['name']}'")
+        cv.terminus = f"station '{term['name']}'"
         cv.text(tx + pill_w / 2 + 13, ty - 4, term["name"], 17, True, anchor="start", desc=f"label '{term['name']}'")
         cv.text(tx + pill_w / 2 + 13, ty + 15, term.get("sublabel", ""), 12.5, fill=s["muted"], anchor="start",
                 desc=f"label '{term['name']}'")

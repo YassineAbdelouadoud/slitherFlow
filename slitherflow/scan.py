@@ -25,6 +25,7 @@ exist but that `rule all` only asks for under some settings are not marked eithe
 import ast
 import itertools
 import re
+import string
 import sys
 import textwrap
 from pathlib import Path
@@ -303,6 +304,8 @@ class Project:
         func = node.func
         name = func.id if isinstance(func, ast.Name) else func.attr if isinstance(func, ast.Attribute) else None
         args = [self.values(a, env, stack) for a in node.args]
+        if name == "expand" and args:
+            return self.expand(args[0], node.keywords, env, stack)
         if name in PASS_THROUGH:
             return args[0] if args else set()
         if name == "format" and isinstance(func, ast.Attribute):      # "x/{sample}.bam".format(sample=s): the
@@ -316,6 +319,45 @@ class Project:
         if name in self.functions and name not in stack:
             return self.call_function(name, args, node.keywords, env, stack)
         return set().union(*args) if args else set()                  # unknown function: whatever went into it
+
+    def expand(self, patterns, keywords, env, stack):
+        """expand("model/{name}.parquet", name=["nodes", "edges"]): fill in every combination of the keyword
+        values we can work out (as `product` does; `zip` gives a subset of these). A keyword we can't work out
+        (config, sample sheet), or a {field} with no keyword, stays a wildcard; {{x}} becomes the wildcard {x}."""
+        fill = {}
+        for kw in keywords:
+            if kw.arg is None or kw.arg == "allow_missing":
+                continue
+            vals = {v for v in self.values(kw.value, env, stack) if isinstance(v, str)}
+            if vals:
+                fill[kw.arg] = sorted(vals)
+        out = set()
+        for pattern in patterns:
+            if not isinstance(pattern, str):
+                out.add(pattern)                      # a rule reference: keep it as it is
+                continue
+            try:
+                parts = list(string.Formatter().parse(pattern))
+            except ValueError:                        # not a format string we can read: keep the pattern
+                out.add(pattern)
+                continue
+            fields = sorted({f for _, f, _, _ in parts if f in fill})
+            for combo in itertools.islice(itertools.product(*(fill[f] for f in fields)), MAX_VALUES):
+                values = dict(zip(fields, combo))
+                text = ""
+                for literal, field, spec, conv in parts:
+                    text += literal                   # Formatter has already turned {{ }} into { }
+                    if field is None:
+                        continue
+                    if field not in values:
+                        text += "{" + field + "}"     # no value we know: stays a wildcard
+                        continue
+                    try:
+                        text += format(values[field], spec or "")
+                    except ValueError:
+                        text += values[field]
+                out.add(text)
+        return set(itertools.islice(out, MAX_VALUES))
 
     def call_function(self, name, args, keywords, env, stack):
         """What a helper function defined in the project could return, given what its arguments could be

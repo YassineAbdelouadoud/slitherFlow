@@ -304,7 +304,7 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
     out += [f"    - {station(i)}" for i in trunk]
     trunk_ids = sorted((l for l, v in lines.items() if "from" not in v), key=lambda l: lines[l]["row"])
     out += ["  lines: [" + ", ".join(trunk_ids) + "]   # top -> bottom on the trunk",
-            "", "lines:"]
+            "", "lines:" if lines else "lines: {}"]
     for lid, ln in lines.items():
         branch = isinstance(ln.get("from"), dict)
         if branch:   # no name: it shares its parent's colour and legend entry
