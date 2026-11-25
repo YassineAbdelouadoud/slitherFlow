@@ -183,3 +183,42 @@ def test_terminus_always_has_a_line_going_in():
     assert extra["from"]["station"] == "Export"
     _, cv = slitherflow.render(spec)
     assert slitherflow.check_overlaps(cv) == []
+
+
+def test_rule_feeding_itself_is_left_out_not_a_crash():
+    """Issue: a rule whose job for one wildcard value reads its own output for another shows up in the rule graph
+    as `solve -> solve`. The drafter recursed along it until RecursionError. The loop is now left out and listed
+    in the spec, and the rest of the map is drawn as usual."""
+    dot = small_dot([("prepare", "solve"), ("solve", "solve"), ("solve", "report"), ("report", "all")])
+    text = slitherflow.spec_from_rulegraph(dot)
+    spec = yaml.safe_load(text)
+    stations = [st["name"] for st in spec["trunk"]["stations"]]
+    stations += [st["name"] for ln in spec["lines"].values() for st in ln["stations"]]
+    assert sorted(stations) == ["Prepare", "Report", "Solve"]
+    assert "#   - solve -> solve" in text
+    _, cv = slitherflow.render(spec)
+    assert slitherflow.check_overlaps(cv) == []
+
+
+def test_longer_loop_drops_only_the_connection_that_closes_it():
+    """A child scenario built from its parent's run: `scenario -> run` and `run -> scenario` in the rule graph.
+    Walking forward from the inputs, `run -> scenario` is the one that goes back, so only it is left out."""
+    dot = small_dot([("data", "scenario"), ("scenario", "run"), ("run", "scenario"), ("run", "summary"),
+                     ("run", "figures"), ("summary", "all"), ("figures", "all")])
+    text = slitherflow.spec_from_rulegraph(dot)
+    spec = yaml.safe_load(text)
+    assert "#   - run -> scenario" in text
+    assert "scenario -> run" not in text
+    assert ("Scenario", "Run") in drawn_connections(spec)
+    slitherflow.render(spec)
+
+
+def test_loop_no_source_leads_to_is_broken_too():
+    """`--scan` on a real pipeline: run and scenario only fed each other (the input that feeds run from the data
+    is built at run time, which the scan can't see), and a figure rule read from both them and the data rule.
+    The loop wasn't reachable from any source, so it stayed, and the figure rule had no depth (KeyError)."""
+    dot = small_dot([("run", "scenario"), ("scenario", "run"), ("data", "figure"), ("run", "figure"),
+                     ("scenario", "figure"), ("figure", "all")])
+    text = slitherflow.spec_from_rulegraph(dot)
+    assert "#   - scenario -> run" in text
+    slitherflow.render(yaml.safe_load(text))

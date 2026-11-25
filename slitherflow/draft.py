@@ -30,6 +30,39 @@ def find_terminus(succ, pred):
     return max(sinks, key=lambda i: (len(pred[i]), len(ancestors(i)), -order[i]))
 
 
+def drop_loops(succ, pred):
+    """Remove the connections that close a loop, so the rest of the graph can be laid out left to right.
+
+    A rule graph can loop even though Snakemake's job graph can't: a rule whose job for one wildcard value reads
+    the output of the same rule for another value (warm starts, parent and child scenarios) shows up as
+    `run -> run`, or as `run -> scenario -> run` through other rules. Walking forward from the source rules,
+    a connection back to a rule that is still on the path being walked closes a loop and is dropped. Loops no
+    source leads to (e.g. two rules that only feed each other, when `--scan` can't see what else feeds them) are
+    then walked from their first rule in the graph. Returns the dropped (from, to) pairs."""
+    dropped = []
+    state = {}                                          # 1 = on the current path, 2 = done
+    for src in [i for i in succ if not pred[i]] + list(succ):
+        if src in state:
+            continue
+        state[src] = 1
+        stack = [(src, iter(list(succ[src])))]
+        while stack:
+            i, children = stack[-1]
+            j = next(children, None)
+            if j is None:
+                state[i] = 2
+                stack.pop()
+            elif state.get(j) == 1:
+                dropped.append((i, j))
+            elif j not in state:
+                state[j] = 1
+                stack.append((j, iter(list(succ[j]))))
+    for a, b in dropped:
+        succ[a].remove(b)
+        pred[b].remove(a)
+    return dropped
+
+
 def spec_from_rulegraph(dot_text, title="My pipeline"):
     """A starter spec (YAML text) from a rule graph in `snakemake --rulegraph` (DOT) form.
 
@@ -52,10 +85,15 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
     rules = {i: n for i, n in names.items() if n != "all"}
     succ = {i: [] for i in rules}
     pred = {i: [] for i in rules}
+    loops = []
     for a, b in edges:
-        if a in rules and b in rules and b not in succ[a]:
+        if a == b and a in rules:
+            if (a, b) not in loops:
+                loops.append((a, b))            # a rule feeding itself (for another wildcard value)
+        elif a in rules and b in rules and b not in succ[a]:
             succ[a].append(b)
             pred[b].append(a)
+    loops += drop_loops(succ, pred)
     term = find_terminus(succ, pred)
     feeds_term = set(pred[term]) if term else set()
     nodes = [i for i in rules if i != term]
@@ -335,4 +373,8 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
     out += ["", 'footnote: ""']
     if unplaced:
         out += ["", "# Rules not placed automatically (add them to a line by hand):"] + [f"#   - {r}" for r in unplaced]
+    if loops:
+        out += ["", "# Connections left out because they loop back (a rule feeding itself or an earlier rule,"
+                    " for another", "# wildcard value):"]
+        out += [f"#   - {rules[a]} -> {rules[b]}" for a, b in loops]
     return "\n".join(out) + "\n"
