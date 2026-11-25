@@ -52,8 +52,8 @@ footnote: "One line of explanation under the legend."
 | Key | Meaning |
 |---|---|
 | `title`, `subtitle` | Text at the top of the map |
-| `input` | The start of the map: `{label, sublabel, file}` |
-| `trunk` | The shared steps every sample goes through (see [below](#trunk)) |
+| `input` | The start of the map: `{label, sublabel, file}`. `file` is the text on the input icon, such as `"FASTQ"`, `"CSV"` or `"NC"` (default `"IN"`) |
+| `trunk` | The shared steps every run goes through (see [below](#trunk)) |
 | `lines` | **Required.** A mapping of line ID → line (see [below](#lines)) |
 | `terminus` | The end station (see [below](#terminus)) |
 | `footnote` | One line of explanation under the legend |

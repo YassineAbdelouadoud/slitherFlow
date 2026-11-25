@@ -271,9 +271,9 @@ def spec_from_rulegraph(dot_text, title="My pipeline"):
            "",
            f'title: {q(title)}',
            'subtitle: "v1.0  ·  Snakemake"',
-           'input: {label: "Input", sublabel: "", file: "FASTQ"}',
+           'input: {label: "Input", sublabel: "", file: "IN"}   # file: text on the input icon, e.g. "FASTQ", "CSV", "NC"',
            "",
-           "trunk:                      # steps every sample goes through",
+           "trunk:                      # steps every run goes through",
            "  stations:"]
     ref = lambda v: q(v) if isinstance(v, str) else "{line: " + v["line"] + ", station: " + q(v["station"]) + "}"
 

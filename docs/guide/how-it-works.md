@@ -4,7 +4,7 @@ slitherFlow only looks at the shape of the rule graph. It never guesses from rul
 
 | Part of the map | How it's chosen |
 |---|---|
-| **Trunk** | The steps every sample goes through, drawn as pill-shaped stations across several lines. It follows the longest chain from the input, and stops where the pipeline splits three or more ways. |
+| **Trunk** | The steps every run goes through, drawn as pill-shaped stations across several lines. It follows the longest chain from the input, and stops where the pipeline splits three or more ways. |
 | **Lines** | Each branch after the trunk becomes its own line, alternating above and below. |
 | **Side lines** | Steps that start from the raw input, or leave the trunk early, become side lines. They're drawn solid, with a commented-out `# optional: true` you can switch on if they only run for some configs. |
 | **Optional steps** | Only marked when the scan can tell. With `--scan`, a rule defined inside an `if` block, or in a file that's only included inside one, is drawn dashed. A plain `snakemake --rulegraph` only lists rules your config runs, so nothing in it is marked optional. |

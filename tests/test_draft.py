@@ -156,3 +156,13 @@ def test_optional_rules_in_the_graph_become_optional_lines_and_stations():
     assert not any(station[n].get("optional") for n in solid)
     assert not any(st.get("optional") for st in spec["trunk"]["stations"])
     slitherflow.render(spec)
+
+
+def test_draft_does_not_assume_bioinformatics():
+    """Issue: drafts hardcoded a FASTQ input icon and "every sample" wording, which is wrong for, say, an energy
+    model. The input icon now says "IN" (with a comment suggesting others) and the wording is domain-neutral."""
+    from conftest import DATA
+    text = slitherflow.spec_from_rulegraph((DATA / "energy_default.dot").read_text(encoding="utf-8"))
+    assert yaml.safe_load(text)["input"]["file"] == "IN"
+    assert "FASTQ" not in text.replace('e.g. "FASTQ"', "")
+    assert "sample" not in text.lower()
